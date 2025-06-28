@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using CoD4_dm1.config;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace CoD4_dm1
 {
@@ -6,16 +8,71 @@ namespace CoD4_dm1
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("PID\tProcess");
-            foreach (var p in Process.GetProcesses().OrderBy(pr => pr.ProcessName, StringComparer.OrdinalIgnoreCase))
-            {
-                // Some system services throw if you touch certain properties—wrap in try/catch.
-                try
+       
+                Process process = null;
+
+                while (process == null)
                 {
-                    Console.WriteLine($"PID: {p.Id}\t NAME: {p.ProcessName}");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Process[] target = GetGameProcess();
+
+                    if (target.Length > 0) {
+                        process = target[0];
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Waiting for iw3mp.exe..");
+                        Thread.Sleep(1000);
+                    }
                 }
-                catch { /* swallow inaccessible processes */ }
-            }
+                
+
+                Memory mem = new Memory();
+                Process targetProcess = process;
+                IntPtr baseAddress = targetProcess.MainModule.BaseAddress;
+
+                Console.WriteLine($"Target Process: {targetProcess.ProcessName} (PID: {targetProcess.Id})");
+
+                // Open the process with read access
+                IntPtr processHandle = Memory.OpenProcess(
+                    Memory.PROCESS_VM_READ | Memory.PROCESS_QUERY_INFORMATION,
+                    false,
+                    targetProcess.Id);
+
+                if (processHandle == IntPtr.Zero)
+                {
+                    Console.WriteLine("Failed to open process. Error: " + Marshal.GetLastWin32Error());
+                    return;
+                }
+
+                while (true)
+                {
+                    byte[] buffer = mem.ReadBytes(processHandle, baseAddress + Offsets.FpsCounterAddress, 4);
+
+                    if (buffer.Length > 0)
+                    {
+                        //Console.WriteLine($"Successfully read {buffer.Length} bytes from process memory.");
+                        Console.WriteLine("Current value "+BitConverter.ToSingle(buffer, 0) + " fps");
+                        Thread.Sleep(400);
+                        
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to read memory. Error: " + Marshal.GetLastWin32Error());
+                        break;
+                    }
+                }    
+
+                // Always close the handle when done
+                Memory.CloseHandle(processHandle);
+            
+            
+        }
+
+        public static Process[] GetGameProcess()
+        {
+            return Process.GetProcessesByName("iw3mp");
         }
     }
 }
