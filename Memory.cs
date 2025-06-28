@@ -51,7 +51,7 @@ namespace CoD4_dm1
             throw new InvalidOperationException("Failed to read memory");
         }
 
-        // Helper method to read a string from memory
+        
         public  string ReadString(IntPtr processHandle, IntPtr address, int maxLength = 256)
         {
             byte[] buffer = new byte[maxLength];
@@ -80,7 +80,7 @@ namespace CoD4_dm1
 
             if (ReadProcessMemory(processHandle, address, buffer, size, out bytesRead))
             {
-                // Resize buffer to actual bytes read
+                
                 if ((int)bytesRead < size)
                 {
                     Array.Resize(ref buffer, (int)bytesRead);
@@ -88,7 +88,7 @@ namespace CoD4_dm1
                 return buffer;
             }
 
-            return new byte[0];
+            return [];
         }
     }
 }

@@ -54,7 +54,7 @@ namespace CoD4_dm1
                     {
                         //Console.WriteLine($"Successfully read {buffer.Length} bytes from process memory.");
                         Console.WriteLine("Current value "+BitConverter.ToSingle(buffer, 0) + " fps");
-                        Thread.Sleep(400);
+                        Thread.Sleep(100);
                         
                     }
                     else
