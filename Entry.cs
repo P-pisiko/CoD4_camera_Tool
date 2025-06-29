@@ -1,5 +1,6 @@
 ﻿using CoD4_dm1.config;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 
 namespace CoD4_dm1
@@ -35,10 +36,7 @@ namespace CoD4_dm1
                 Console.WriteLine($"Target Process: {targetProcess.ProcessName} (PID: {targetProcess.Id})");
 
                 // Open the process with read access
-                IntPtr processHandle = Memory.OpenProcess(
-                    Memory.PROCESS_VM_READ | Memory.PROCESS_QUERY_INFORMATION,
-                    false,
-                    targetProcess.Id);
+                IntPtr processHandle = Memory.OpenProcess(Memory.PROCESS_VM_READ | Memory.PROCESS_QUERY_INFORMATION,false,targetProcess.Id);
 
                 if (processHandle == IntPtr.Zero)
                 {
@@ -46,15 +44,26 @@ namespace CoD4_dm1
                     return;
                 }
 
-                while (true)
+                int runtime = 0;
+                List<Structs.Entitys.FrameRate> Frames = new List<Structs.Entitys.FrameRate>();
+                while (runtime < 200)
                 {
                     byte[] buffer = mem.ReadBytes(processHandle, baseAddress + Offsets.FpsCounterAddress, 4);
 
                     if (buffer.Length > 0)
                     {
-                        //Console.WriteLine($"Successfully read {buffer.Length} bytes from process memory.");
-                        Console.WriteLine("Current value "+BitConverter.ToSingle(buffer, 0) + " fps");
-                        Thread.Sleep(100);
+                    
+                    //Console.WriteLine("Current value "+BitConverter.ToSingle(buffer, 0) + " fps");
+                    
+                    
+
+                    Structs.Entitys.FrameRate frame = new Structs.Entitys.FrameRate { fps = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.FpsCounterAddress) };
+                    Frames.Add(frame);
+
+                    
+                    runtime++;
+                    Thread.Sleep(100);
+
                         
                     }
                     else
@@ -62,7 +71,10 @@ namespace CoD4_dm1
                         Console.WriteLine("Failed to read memory. Error: " + Marshal.GetLastWin32Error());
                         break;
                     }
-                }    
+                }
+                foreach (Structs.Entitys.FrameRate frame in Frames) {
+                    Console.WriteLine(frame.fps);
+                }
 
                 // Always close the handle when done
                 Memory.CloseHandle(processHandle);

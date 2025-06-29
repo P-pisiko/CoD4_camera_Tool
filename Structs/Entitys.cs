@@ -10,12 +10,16 @@ namespace CoD4_dm1.Structs
     {
         public struct FrameRate 
         { 
-            public int fps; 
+            public float fps; 
         }
 
         public struct Camera
         {
-           
+            public float X;
+            public float Y;
+            public float Z;
+            public float Yaw;
+            public float Pitch;
         }
     }
 }
