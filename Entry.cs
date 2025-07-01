@@ -45,8 +45,11 @@ namespace CoD4_dm1
                 }
 
                 int runtime = 0;
-                List<Structs.Entitys.FrameRate> Frames = new List<Structs.Entitys.FrameRate>();
-                while (runtime < 200)
+                List<Structs.Entitys.FrameRate> Framerate = new List<Structs.Entitys.FrameRate>();
+                List<Structs.Entitys.Camera> CameraFrames = new List<Structs.Entitys.Camera>();
+            Console.WriteLine("Starting capture in 3");
+            Thread.Sleep(3000);
+                while (runtime < 500)
                 {
                     byte[] buffer = mem.ReadBytes(processHandle, baseAddress + Offsets.FpsCounterAddress, 4);
 
@@ -57,12 +60,17 @@ namespace CoD4_dm1
                     
                     
 
-                    Structs.Entitys.FrameRate frame = new Structs.Entitys.FrameRate { fps = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.FpsCounterAddress) };
-                    Frames.Add(frame);
-
+                    Structs.Entitys.FrameRate FpsStruct = new Structs.Entitys.FrameRate { fps = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.FpsCounterAddress) };
+                    Structs.Entitys.Camera CamFrame = new Structs.Entitys.Camera();
                     
+                    CamFrame.X = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_X);
+                    CamFrame.Y = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Y);
+                    CamFrame.Z = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Z);
+                    CamFrame.Yaw = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Yaw);
+                    CamFrame.Pitch = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Pitch);
+                    CameraFrames.Add(CamFrame);
                     runtime++;
-                    Thread.Sleep(100);
+                    Thread.Sleep(1000 / (int)FpsStruct.fps);
 
                         
                     }
@@ -72,12 +80,14 @@ namespace CoD4_dm1
                         break;
                     }
                 }
-                foreach (Structs.Entitys.FrameRate frame in Frames) {
-                    Console.WriteLine(frame.fps);
-                }
+            for (int i = 0; i < CameraFrames.Count; i++)
+            {
+                var frame = CameraFrames[i];
+                Console.WriteLine($"{i,3} | {frame.X,8:F3} {frame.Y,8:F3} {frame.Z,8:F3} | {frame.Yaw,8:F3} {frame.Pitch,8:F3} ");
+            }
 
-                // Always close the handle when done
-                Memory.CloseHandle(processHandle);
+            // Always close the handle when done
+            Memory.CloseHandle(processHandle);
             
             
         }
