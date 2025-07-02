@@ -44,49 +44,10 @@ namespace CoD4_dm1
                     return;
                 }
 
-                int runtime = 0;
-                List<Structs.Entitys.FrameRate> Framerate = new List<Structs.Entitys.FrameRate>();
-                List<Structs.Entitys.Camera> CameraFrames = new List<Structs.Entitys.Camera>();
-            Console.WriteLine("Starting capture in 3");
-            Thread.Sleep(3000);
-                while (runtime < 500)
-                {
-                    byte[] buffer = mem.ReadBytes(processHandle, baseAddress + Offsets.FpsCounterAddress, 4);
+                Record rec = new Record(baseAddress,processHandle);
+                rec.StartRecording();
 
-                    if (buffer.Length > 0)
-                    {
-                    
-                    //Console.WriteLine("Current value "+BitConverter.ToSingle(buffer, 0) + " fps");
-                    
-                    
-
-                    Structs.Entitys.FrameRate FpsStruct = new Structs.Entitys.FrameRate { fps = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.FpsCounterAddress) };
-                    Structs.Entitys.Camera CamFrame = new Structs.Entitys.Camera();
-                    
-                    CamFrame.X = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_X);
-                    CamFrame.Y = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Y);
-                    CamFrame.Z = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Z);
-                    CamFrame.Yaw = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Yaw);
-                    CamFrame.Pitch = mem.ReadMemory<float>(processHandle, baseAddress + Offsets.Cam_Pitch);
-                    CameraFrames.Add(CamFrame);
-                    runtime++;
-                    Thread.Sleep(1000 / (int)FpsStruct.fps);
-
-                        
-                    }
-                    else
-                    {
-                        Console.WriteLine("Failed to read memory. Error: " + Marshal.GetLastWin32Error());
-                        break;
-                    }
-                }
-            for (int i = 0; i < CameraFrames.Count; i++)
-            {
-                var frame = CameraFrames[i];
-                Console.WriteLine($"{i,3} | {frame.X,8:F3} {frame.Y,8:F3} {frame.Z,8:F3} | {frame.Yaw,8:F3} {frame.Pitch,8:F3} ");
-            }
-
-            // Always close the handle when done
+            // close the handle when done
             Memory.CloseHandle(processHandle);
             
             

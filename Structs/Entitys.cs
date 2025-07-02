@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CoD4_dm1.Structs
 {
-    class Entitys
+    public class Entitys
     {
         public struct FrameRate 
         { 
