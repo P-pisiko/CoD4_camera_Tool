@@ -11,10 +11,11 @@ namespace CoD4_dm1
         {
        
                 Process process = null;
-
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("Waiting for iw3mp.exe");
                 while (process == null)
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
+                    
                     Process[] target = GetGameProcess();
 
                     if (target.Length > 0) {
@@ -23,7 +24,7 @@ namespace CoD4_dm1
                     }
                     else
                     {
-                        Console.WriteLine("Waiting for iw3mp.exe..");
+                        Console.Write(".");
                         Thread.Sleep(1000);
                     }
                 }

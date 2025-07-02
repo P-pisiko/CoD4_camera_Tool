@@ -27,9 +27,9 @@ namespace CoD4_dm1
             _camFramesList = new List<Structs.Entitys.Camera>();
         }
 
-        public void StartRecording()
+        public List<Structs.Entitys.Camera> StartRecording()
         {
-            byte debug_show_viewpos = 0;
+            byte debug_show_viewpos;
             do
             {
                 debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos);
@@ -58,6 +58,7 @@ namespace CoD4_dm1
                 
                 Thread.Sleep(1000 / (int)framerate);
             }
+            return _camFramesList;
 
         }
 
