@@ -22,6 +22,9 @@ namespace CoD4_dm1.config
 
         public static IntPtr Cam_Pitch { get; } = 0x39B698;
 
+        public static IntPtr debug_show_viewpos { get; } = 0xC7C5E88;
+
+        //public static IntPtr debug_show_viewpos { get; } = 0xC7C5E98;
 
     }
 }
