@@ -46,8 +46,11 @@ namespace CoD4_dm1
                 }
 
                 Record rec = new Record(baseAddress,processHandle);
-                rec.StartRecording();
 
+            
+            //rec.DebugRecord();
+            var List = rec.StartRecording();
+            FileFormats.Csv csv = new FileFormats.Csv(List);
             // close the handle when done
             Memory.CloseHandle(processHandle);
             

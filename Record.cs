@@ -41,13 +41,13 @@ namespace CoD4_dm1
             {
                 if(debug_show_viewpos == 0)
                 {
-                    Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
+                    /*Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
                     for (int i = 0; i < _camFramesList.Count; i++) 
                     {
                         var camFrame = _camFramesList[i];
                         Console.WriteLine($"{i,4} | {camFrame.X,8:F3} {camFrame.Y,8:F3} {camFrame.Z,8:F3} │ {camFrame.Yaw,8:F2} {camFrame.Pitch,8:F2}");
                         
-                    }
+                    }*/
                     break;
                 }
                 debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos );
@@ -86,9 +86,10 @@ namespace CoD4_dm1
             stopwatch.Start();//tempo
             while (true)
             {
-                if (stopwatch.ElapsedMilliseconds > 30000)
+                if (stopwatch.ElapsedMilliseconds > 300)
                 {
                     Console.WriteLine(_camFramesList.Count.ToString());
+                    Console.WriteLine(_camFramesList[0].X + " " + _camFramesList[0].Y +" "+ _camFramesList[0].Z);
                     break;
                 }
                 var CamFrame = ReadCamFrame();
