@@ -29,25 +29,26 @@ namespace CoD4_dm1
 
         public List<Structs.Entitys.Camera> StartRecording()
         {
+            Console.WriteLine("Waiting for the Dvar");
             byte debug_show_viewpos;
             do
             {
                 debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos);
                 Thread.Sleep(250);
 
-            } while (debug_show_viewpos == 0);
+            } while (debug_show_viewpos == 0 && debug_show_viewpos !=1);
 
             while (true)
             {
-                if(debug_show_viewpos == 0)
+                if(debug_show_viewpos == 0 && debug_show_viewpos != 1)
                 {
-                    /*Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
+                    Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
                     for (int i = 0; i < _camFramesList.Count; i++) 
                     {
                         var camFrame = _camFramesList[i];
                         Console.WriteLine($"{i,4} | {camFrame.X,8:F3} {camFrame.Y,8:F3} {camFrame.Z,8:F3} │ {camFrame.Yaw,8:F2} {camFrame.Pitch,8:F2}");
                         
-                    }*/
+                    }
                     break;
                 }
                 debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos );
@@ -82,19 +83,21 @@ namespace CoD4_dm1
         {
             Stopwatch stopwatch = Stopwatch.StartNew();//temp
 
-
+            int deadline = 8000;
             stopwatch.Start();//tempo
             while (true)
             {
-                if (stopwatch.ElapsedMilliseconds > 300)
+                if (stopwatch.ElapsedMilliseconds > deadline)
                 {
-                    Console.WriteLine(_camFramesList.Count.ToString());
-                    Console.WriteLine(_camFramesList[0].X + " " + _camFramesList[0].Y +" "+ _camFramesList[0].Z);
+                    Console.WriteLine($"[ + ] Eclipsed Time:  {stopwatch.ElapsedMilliseconds / 1000}s");
+                    Console.WriteLine($"[ + ] Total Recorded Frame Count:  {_camFramesList.Count()}");
+                    Console.WriteLine($"[ + ] Avarage time accuracy:  {deadline / _camFramesList.Count()}ms ");
+                    Console.WriteLine($"[ + ] Sample Frame from the list: {_camFramesList[30].X} { _camFramesList[30].Y} {_camFramesList[30].Z}");
                     break;
                 }
                 var CamFrame = ReadCamFrame();
                 _camFramesList.Add(CamFrame);
-                var framerate = _memory.ReadMemory<float>(_processHandle, _baseaddress + 0xC6EE228);
+                var framerate = _memory.ReadMemory<float>(_processHandle, _baseaddress + Offsets.FpsCounterAddress);
                 Thread.Sleep(1000 / (int)framerate);
 
             }

@@ -21,6 +21,7 @@ namespace CoD4_dm1
                     if (target.Length > 0) {
                         process = target[0];
                         Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine();
                     }
                     else
                     {
@@ -49,8 +50,11 @@ namespace CoD4_dm1
 
             
             //rec.DebugRecord();
+            
             var List = rec.StartRecording();
+            Console.WriteLine("[ + ]Finised Recording, writing to the file.");
             FileFormats.Csv csv = new FileFormats.Csv(List);
+            
             // close the handle when done
             Memory.CloseHandle(processHandle);
             
