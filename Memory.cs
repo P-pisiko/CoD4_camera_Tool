@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -10,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace CoD4_dm1
 {
+    /// <summary>
+    /// I used AI to optimze the memory reads go ahead make fun of me.
+    /// </summary>
     public class Memory
     {
         #region Imports
@@ -17,7 +19,7 @@ namespace CoD4_dm1
         public static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
+        public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, IntPtr lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool CloseHandle(IntPtr hObject);
@@ -27,52 +29,50 @@ namespace CoD4_dm1
         // access rights constants
         public const uint PROCESS_VM_READ = 0x0010;
         public const uint PROCESS_QUERY_INFORMATION = 0x0400;
+        const int MaxStackBytes = 256;
 
-        // Helper method to read a specific data type from memory
-        public  T ReadMemory<T>(IntPtr processHandle, IntPtr address) where T : struct
+        unsafe public T ReadMemory<T>(IntPtr processHandle, IntPtr address) where T : struct
         {
-            int size = Marshal.SizeOf<T>();
-            byte[] buffer = new byte[size];
-            IntPtr bytesRead;
+            // tweakable; larger structs need more
+            var size = Marshal.SizeOf<T>();
 
-            if (ReadProcessMemory(processHandle, address, buffer, size, out bytesRead))
+            // Quick sanity check – we can't stack‑alloc too much on the stack
+            if (size > MaxStackBytes)
+                throw new ArgumentException($"Struct too large for stack allocation (>{MaxStackBytes} bytes).", nameof(size));
+
+            // Allocate buffer on the stack
+            byte* buf = stackalloc byte[size];
+
+            if (!ReadProcessMemory(processHandle, address, new IntPtr(buf), size, out var bytesRead))
             {
-                GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                try
-                {
-                    return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-                }
-                finally
-                {
-                    handle.Free();
-                }
+                int err = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException($"ReadProcessMemory failed with error {err}");
             }
 
-            throw new InvalidOperationException("Failed to read memory");
+            return MemoryMarshal.Read<T>(new ReadOnlySpan<byte>(buf, size));
         }
 
-        
-        public  string ReadString(IntPtr processHandle, IntPtr address, int maxLength = 256)
+        unsafe public string ReadString(IntPtr processHandle, IntPtr address, int maxLength = 256)
         {
-            byte[] buffer = new byte[maxLength];
-            IntPtr bytesRead;
+            const int StackLimit = 256;
+            if (maxLength > StackLimit)
+                throw new ArgumentOutOfRangeException(nameof(maxLength), $"maxLength must be ≤ {StackLimit} bytes for stack allocation.");
 
-            if (ReadProcessMemory(processHandle, address, buffer, maxLength, out bytesRead))
+            byte* buf = stackalloc byte[maxLength];
+            if (!ReadProcessMemory(processHandle, address, new IntPtr(buf), maxLength, out IntPtr bytesRead))
             {
-                // Find null terminator
-                int nullIndex = Array.IndexOf(buffer, (byte)0);
-                if (nullIndex >= 0)
-                {
-                    Array.Resize(ref buffer, nullIndex);
-                }
-
-                return Encoding.UTF8.GetString(buffer);
+                return string.Empty;
             }
 
-            return string.Empty;
+            // Find null terminator inside the read bytes
+            Span<byte> span = new Span<byte>(buf, (int)bytesRead);
+            int nullIndex = span.IndexOf((byte)0);
+            int len = nullIndex >= 0 ? nullIndex : span.Length;
+
+            return Encoding.UTF8.GetString(span.Slice(0, len));
         }
 
-        // Helper method to read raw bytes from memory
+        /* read raw bytes from memory
         public  byte[] ReadBytes(IntPtr processHandle, IntPtr address, int size)
         {
             byte[] buffer = new byte[size];
@@ -90,5 +90,7 @@ namespace CoD4_dm1
 
             return [];
         }
+
+        */
     }
 }
