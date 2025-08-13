@@ -49,12 +49,12 @@ namespace CoD4_dm1
                 Record rec = new Record(baseAddress,processHandle);
 
             
-            //rec.DebugRecord();
+            rec.DebugRecord();
             
-            var List = rec.StartRecording();
+            /*var List = rec.StartRecording();
             Console.WriteLine("[ + ]Finised Recording, writing to the file.");
             FileFormats.Csv csv = new FileFormats.Csv(List);
-            
+            */
             // close the handle when done
             Memory.CloseHandle(processHandle);
             

@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36121.58 d17.14
+VisualStudioVersion = 17.14.36121.58
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoD4-dm1", "CoD4-dm1.csproj", "{2E8C904D-84A3-43F7-9BD4-0C05278E6C43}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "C#", "C#", "{D0F2746C-2141-4A46-B199-05625864FEF9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "C++", "C++", "{01A31840-C5A6-4970-BECE-10C18228C5F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +24,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2E8C904D-84A3-43F7-9BD4-0C05278E6C43} = {D0F2746C-2141-4A46-B199-05625864FEF9}
+		{D0F2746C-2141-4A46-B199-05625864FEF9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{01A31840-C5A6-4970-BECE-10C18228C5F9} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A03CFC25-9020-44AC-A7CC-E296D18FB27E}

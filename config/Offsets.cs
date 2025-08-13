@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace CoD4_dm1.config
 {
+    /// <summary>
+    /// Appearintly when you lookup for an DVAR using cheat engine it looks like you find the "static" adress of that 
+    /// variable but as soons as a new profile loaded all the "static" are gone, the underlying problems looks like the user config file
+    /// Sinse the most of the settings are loaded from the config_mp.cfg file order of the DVAR's effects the DVAR table.
+    /// </summary>
     class Offsets
     {
         public static IntPtr FpsCounterAddress { get; } =  0xC6EE228; //iw3mp.exe+C6EE228
