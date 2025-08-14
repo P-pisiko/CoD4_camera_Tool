@@ -27,6 +27,8 @@ namespace CoD4_dm1
             _camFramesList = new List<Structs.Entitys.Camera>();
         }
 
+        
+
         public List<Structs.Entitys.Camera> StartRecording()
         {
             Console.WriteLine("Waiting for the Dvar");
@@ -57,13 +59,13 @@ namespace CoD4_dm1
 
                 var framerate = _memory.ReadMemory<float>(_processHandle, _baseaddress + 0xC6EE228);
                 
-                Thread.Sleep(1000 / (int)framerate);
+                
             }
             return _camFramesList;
 
         }
 
-        public Structs.Entitys.Camera ReadCamFrame()
+        private Structs.Entitys.Camera ReadCamFrame()
         {
             var CamFrame = new Structs.Entitys.Camera
             {
