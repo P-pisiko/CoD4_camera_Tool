@@ -8,10 +8,11 @@
 #include <string>
 
 // allows to easily switch between retail and openjk version of the game
-int openjk = 0;
+int openjk = 1;
 
 // path to the dll to be injected
-char dllPath[256] = "D:\\Projeler\\Dll_InjectorC++\\sample.dll";
+char dllPath[256] = "C:\\Users\\T-Box\\source\\repos\\CoD4-dm1\\bin\\Release\\net8.0\\endsceen-hook.dll"; //ACTÝVE
+
 std::string dllname = "endsceen-hook.dll";
 BOOL FileExists(LPCTSTR path)
 {
@@ -49,6 +50,7 @@ BOOL checkAlreadyInjected(DWORD PID, std::string moduleName)
     CloseHandle(hSnapshot);
     return FALSE;
 }
+
 extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
 {
 
@@ -58,7 +60,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     {
         // openjk version C:\\Windows\\system32\\notepad.exe
         //"D:\\SteamLibrary\\steamapps\\common\\Call of Duty 4"
-        EXE_DIR = L"D:\\SteamLibrary\\steamapps\\common\\Call of Duty 4";
+        EXE_DIR = filePath;
         EXE_NAME = L"iw3mp.exe";
     }
 
@@ -70,7 +72,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     }
 
     // std::string EXE_PATH = EXE_DIR + "\\" + EXE_NAME;
-    std::wstring EXE_PATH = filePath;
+    std::wstring EXE_PATH = std::wstring(filePath) + L"\\" + EXE_NAME;
     // Launch Process
     // additional information
     STARTUPINFOW si;
@@ -153,11 +155,11 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
         exit(4);
     }
 
-    if (checkAlreadyInjected(PID, dllPath))
+    /*if (checkAlreadyInjected(PID, dllPath))
     {
         std::cerr << "Already injected" << std::endl;
         exit(5);
-    }
+    }*/
 
     // Get a handle to the process
     HANDLE procHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
