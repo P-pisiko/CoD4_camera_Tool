@@ -8,7 +8,7 @@
 #include <string>
 
 // allows to easily switch between retail and openjk version of the game
-int openjk = 1;
+int debug = 0;
 
 // path to the dll to be injected
 char dllPath[256] = "C:\\Users\\T-Box\\source\\repos\\CoD4-dm1\\bin\\Release\\net8.0\\endsceen-hook.dll"; //ACTÝVE
@@ -29,7 +29,7 @@ BOOL checkAlreadyInjected(DWORD PID, std::string moduleName)
 
     if (hSnapshot == INVALID_HANDLE_VALUE)
     {
-        std::cerr << "Invalid handle value" << std::endl;
+        std::cerr << "[ loader ] Invalid handle value" << std::endl;
         exit(99);
     }
 
@@ -51,16 +51,16 @@ BOOL checkAlreadyInjected(DWORD PID, std::string moduleName)
     return FALSE;
 }
 
-extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
+extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
 {
 
     std::wstring EXE_DIR;
     std::wstring EXE_NAME;
-    if (openjk == 1)
+    if (debug == 0)
     {
         // openjk version C:\\Windows\\system32\\notepad.exe
         //"D:\\SteamLibrary\\steamapps\\common\\Call of Duty 4"
-        EXE_DIR = filePath;
+        EXE_DIR = RootPath;
         EXE_NAME = L"iw3mp.exe";
     }
 
@@ -71,8 +71,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
         EXE_NAME = L"notepad.exe";
     }
 
-    // std::string EXE_PATH = EXE_DIR + "\\" + EXE_NAME;
-    std::wstring EXE_PATH = std::wstring(filePath) + L"\\" + EXE_NAME;
+    std::wstring EXE_PATH = std::wstring(RootPath) + L"\\" + EXE_NAME;
     // Launch Process
     // additional information
     STARTUPINFOW si;
@@ -96,7 +95,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
         &pi               // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
     ))
     {
-        std::wcerr << "Can't create process" << std::endl;
+        std::wcerr << "[ loader ] Can't create process" << std::endl;
         exit(88);
     }
 
@@ -118,7 +117,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
 
     if (snapshot == INVALID_HANDLE_VALUE)
     {
-        std::cerr << "Can't get list of running processes" << std::endl;
+        std::cerr << "[ loader ] Can't get list of running processes" << std::endl;
         exit(1);
     }
 
@@ -139,19 +138,19 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     }
     else
     {
-        std::cerr << "Can't process list of running processes" << std::endl;
+        std::cerr << "[ loader ] Can't process list of running processes" << std::endl;
         exit(2);
     }
 
     if (!found)
     {
-        std::cerr << "Can't find process" << std::endl;
+        std::cerr << "[ loader ] Can't find process" << std::endl;
         exit(3);
     }
 
     if (!FileExists((LPCTSTR)dllPath))
     {
-        std::cerr << "DLL not found" << std::endl;
+        std::cerr << "[ loader ] DLL not found" << std::endl;
         exit(4);
     }
 
@@ -165,7 +164,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     HANDLE procHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
     if (!procHandle)
     {
-        std::cerr << "Can't open process" << std::endl;
+        std::cerr << "[ loader ] Can't open process" << std::endl;
         exit(6);
     }
 
@@ -174,7 +173,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     LPVOID loadFunctionAddress = (LPVOID)GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
     if (!loadFunctionAddress)
     {
-        std::cerr << "LoadLibraryA not found" << std::endl;
+        std::cerr << "[ loader ] LoadLibraryA not found" << std::endl;
         exit(7);
     }
 
@@ -182,14 +181,14 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     LPVOID allocatedMem = LPVOID(VirtualAllocEx(procHandle, nullptr, MAX_PATH, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
     if (!allocatedMem)
     {
-        std::cerr << "Can't allocate memory in the target process" << std::endl;
+        std::cerr << "[ loader ] Can't allocate memory in the target process" << std::endl;
         exit(8);
     }
 
     // Write the path of our DLL in the allocated memory
     if (!WriteProcessMemory(procHandle, allocatedMem, dllPath, MAX_PATH, nullptr))
     {
-        std::cerr << "Can't write memory into the target process" << std::endl;
+        std::cerr << "[ loader ] Can't write memory into the target process" << std::endl;
         exit(9);
     }
 
@@ -198,7 +197,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
     HANDLE threadHandle = CreateRemoteThread(procHandle, nullptr, NULL, LPTHREAD_START_ROUTINE(loadFunctionAddress), allocatedMem, NULL, nullptr);
     if (!threadHandle)
     {
-        std::cerr << "Can't start the remote thread" << std::endl;
+        std::cerr << " [ loader ] Can't start the remote thread" << std::endl;
         exit(10);
     }
 
