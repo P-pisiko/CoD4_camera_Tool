@@ -132,7 +132,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
             {
                 found = TRUE;
                 PID = entry.th32ProcessID;
-                std::cout << "Got process: " << PID << " " << entry.szExeFile << std::endl;
+                std::cout << "[ loader ] Got process: Pid " << PID << " Entry " << entry.szExeFile << std::endl;
                 break;
             }
         } while (Process32NextW(snapshot, &entry));
@@ -202,11 +202,13 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* filePath)
         exit(10);
     }
 
+    std::cout << "[ loader ] endsceen-hook is loaded" << std::endl;
+
     // work is done
     CloseHandle(procHandle);
     // free memory
     VirtualFreeEx(procHandle, LPVOID(allocatedMem), 0, MEM_RELEASE);
 
-    std::cout << "done!" << std::endl;
+    std::cout << "[ loader ] Done!" << std::endl;
     return 0;
 }
