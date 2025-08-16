@@ -11,64 +11,60 @@ namespace CoD4_dm1
         public static extern void loaderMain(string filePath);
         static void Main(string[] args)
         {
+            
             const string processName = "iw3mp";
             int[] originalPids;
             string gameRootPath = GetProcessDirectory(processName, out originalPids);
+            
             Process[] ps = Process.GetProcessesByName(processName);
-
             foreach (Process p in ps)
                 p.Kill();
+
             loaderMain(gameRootPath);
 
             
 
-                Process process = null;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("Waiting for iw3mp.exe");
-                while (process == null)
-                {
-                    
-                    Process[] target = Process.GetProcessesByName(processName);
-
-                    if (target.Length > 0) 
-                    {
-                        process = target[0];
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                        Console.WriteLine();
-                    }
-                    else
-                        {
-                            Console.Write(".");
-                            Thread.Sleep(1000);
-                        }
-                }
+            Process process = null;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Waiting for iw3mp.exe");
+            while (process == null)
+            {
                 
+                Process[] target = Process.GetProcessesByName(processName);
 
-                Memory mem = new Memory();
-                Process targetProcess = process;
-                IntPtr baseAddress = targetProcess.MainModule.BaseAddress;
-
-                Console.WriteLine($"Target Process: {targetProcess.ProcessName} (PID: {targetProcess.Id})");
-
-                // Open the process with read access
-                IntPtr processHandle = Memory.OpenProcess(Memory.PROCESS_VM_READ | Memory.PROCESS_QUERY_INFORMATION,false,targetProcess.Id);
-
-                if (processHandle == IntPtr.Zero)
+                if (target.Length > 0) 
                 {
-                    Console.WriteLine("Failed to open process. Error: " + Marshal.GetLastWin32Error());
-                    return;
+                    process = target[0];
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    Console.WriteLine();
                 }
+                else
+                {
+                    Console.Write(".");
+                    Thread.Sleep(1000);
+                }
+            }
+            
 
-                Record rec = new Record(baseAddress,processHandle);
+            Memory mem = new Memory();
+            Process targetProcess = process;
+            IntPtr baseAddress = targetProcess.MainModule.BaseAddress;
+
+            // Open the process with read access
+            IntPtr processHandle = Memory.OpenProcess(Memory.PROCESS_VM_READ | Memory.PROCESS_QUERY_INFORMATION,false,targetProcess.Id);
+
+            if (processHandle == IntPtr.Zero)
+            {
+                Console.WriteLine("Failed to open process. Error: " + Marshal.GetLastWin32Error());
+                return;
+            }
+            Console.WriteLine($"Got a handle to {targetProcess.ProcessName} {targetProcess.Id}");
+            Record rec = new Record(baseAddress,processHandle);
 
             
             
             
             
-            /*var List = rec.StartRecording();
-            Console.WriteLine("[ + ]Finised Recording, writing to the file.");
-            FileFormats.Csv csv = new FileFormats.Csv(List);
-            */
             
             Memory.CloseHandle(processHandle);
             
@@ -76,7 +72,12 @@ namespace CoD4_dm1
         }
 
         
-
+        /// <summary>
+        /// Find out where game is located.
+        /// </summary>
+        /// <param name="processName"></param>
+        /// <param name="observedPids"></param>
+        /// <returns></returns>
         static string GetProcessDirectory(string processName, out int[] observedPids)
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -93,7 +94,7 @@ namespace CoD4_dm1
                         string dir = Path.GetDirectoryName(procs[0].MainModule.FileName);
                         observedPids = procs.Select(p => p.Id).ToArray();
                         Console.ForegroundColor = ConsoleColor.Gray;
-                        Console.WriteLine(dir);
+                        Console.WriteLine($"\nFound root directory: {dir}");
                         return dir;
                     }
                     catch

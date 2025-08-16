@@ -23,7 +23,7 @@ namespace CoD4_dm1.PipeServer
                 Console.WriteLine("NamedPipe server is running");
                 await pipeServer.WaitForConnectionAsync();
                 Console.WriteLine("Client connected!");
-
+                
                 using var reader = new StreamReader(pipeServer, Encoding.UTF8, leaveOpen: true);
                 using (var writer = new StreamWriter(pipeServer, Encoding.UTF8, leaveOpen: true) { AutoFlush = true })
                 {
