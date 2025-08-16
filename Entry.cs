@@ -7,27 +7,40 @@ namespace CoD4_dm1
 {
     internal class Entry
     {
+        [DllImport("loader.dll", CharSet = CharSet.Unicode, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void loaderMain(string filePath);
         static void Main(string[] args)
         {
-       
+            const string processName = "iw3mp";
+            int[] originalPids;
+            string gameRootPath = GetProcessDirectory(processName, out originalPids);
+            Process[] ps = Process.GetProcessesByName(processName);
+
+            foreach (Process p in ps)
+                p.Kill();
+            loaderMain(gameRootPath);
+
+            
+
                 Process process = null;
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write("Waiting for iw3mp.exe");
                 while (process == null)
                 {
                     
-                    Process[] target = GetGameProcess();
+                    Process[] target = Process.GetProcessesByName(processName);
 
-                    if (target.Length > 0) {
+                    if (target.Length > 0) 
+                    {
                         process = target[0];
                         Console.ForegroundColor = ConsoleColor.Gray;
                         Console.WriteLine();
                     }
                     else
-                    {
-                        Console.Write(".");
-                        Thread.Sleep(1000);
-                    }
+                        {
+                            Console.Write(".");
+                            Thread.Sleep(1000);
+                        }
                 }
                 
 
@@ -49,21 +62,53 @@ namespace CoD4_dm1
                 Record rec = new Record(baseAddress,processHandle);
 
             
-            rec.DebugRecord();
+            
+            
             
             /*var List = rec.StartRecording();
             Console.WriteLine("[ + ]Finised Recording, writing to the file.");
             FileFormats.Csv csv = new FileFormats.Csv(List);
             */
-            // close the handle when done
+            
             Memory.CloseHandle(processHandle);
             
             
         }
 
-        public static Process[] GetGameProcess()
+        
+
+        static string GetProcessDirectory(string processName, out int[] observedPids)
         {
-            return Process.GetProcessesByName("iw3mp");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write($"Waiting for {processName}.exe");
+
+            while (true)
+            {
+                var procs = Process.GetProcessesByName(processName);
+                if (procs.Length > 0)
+                {
+                    try
+                    {
+                        // Get directory of the first accessible instance and record all current PIDs
+                        string dir = Path.GetDirectoryName(procs[0].MainModule.FileName);
+                        observedPids = procs.Select(p => p.Id).ToArray();
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.WriteLine(dir);
+                        return dir;
+                    }
+                    catch
+                    {
+                        // Access denied or process exited while accessing MainModule — try again
+                    }
+                }
+
+                Console.Write(".");
+                Thread.Sleep(1000);
+            }
         }
+
+
+
+
     }
 }
