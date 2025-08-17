@@ -77,7 +77,6 @@ namespace CoD4_dm1
             };
 
             return CamFrame;
-
            
         }
 

@@ -11,10 +11,10 @@ namespace CoD4_dm1.PipeServer
     {
         private readonly string _pipeName = "drainpipe";
 
-        /*public NamedPipeServer()
+        public NamedPipeServer()
         {
             
-        }*/
+        }
 
         public async Task PipeServerStart()
         {

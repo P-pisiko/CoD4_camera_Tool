@@ -29,7 +29,7 @@ namespace CoD4_dm1
         // access rights constants
         public const uint PROCESS_VM_READ = 0x0010;
         public const uint PROCESS_QUERY_INFORMATION = 0x0400;
-        const int MaxStackBytes = 256;
+        const int MaxStackBytes = 128;
 
         unsafe public T ReadMemory<T>(IntPtr processHandle, IntPtr address) where T : struct
         {
