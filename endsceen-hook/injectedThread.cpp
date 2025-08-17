@@ -11,7 +11,7 @@ unsigned char endSceneBytes[7];
 void WINAPI injectedThread(HMODULE hModule)
 {
 
-    // MessageBox(0, "Hax Injected", ":)", 0);
+    
     //  wait for the game to be up and running
     Sleep(1000 * 5);
 

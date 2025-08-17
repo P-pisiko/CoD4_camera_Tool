@@ -6,7 +6,7 @@
 
 #include "injectedThread.h"
 
-// the main method of the injected dll
+
 BOOL APIENTRY DllMain(
     HMODULE hModule,
     DWORD ul_reason_for_call,
