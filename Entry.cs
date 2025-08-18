@@ -1,4 +1,5 @@
 ﻿using CoD4_dm1.config;
+using CoD4_dm1.PipeServer;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
@@ -59,8 +60,10 @@ namespace CoD4_dm1
                 return;
             }
             Console.WriteLine($"Got a handle to {targetProcess.ProcessName} {targetProcess.Id}");
+            
             Record rec = new Record(baseAddress,processHandle);
 
+            NamedPipeServer pipeServer = new NamedPipeServer(rec);
             
             
             

@@ -5,6 +5,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="injectedThread.cpp" />
+    <ClCompile Include="FrameCounter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d.h" />
@@ -12,5 +13,6 @@
     <ClInclude Include="hook.h" />
     <ClInclude Include="injectedThread.h" />
     <ClInclude Include="trampolines.h" />
+    <ClInclude Include="FrameCounter.h" />
   </ItemGroup>
 </Project>

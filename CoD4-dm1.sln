@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.14.36121.58
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoD4-dm1", "CoD4-dm1.csproj", "{2E8C904D-84A3-43F7-9BD4-0C05278E6C43}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1C03CC2A-D238-4D64-B8EF-6977824B7468} = {1C03CC2A-D238-4D64-B8EF-6977824B7468}
+		{B7BDE64F-3592-4C55-9AE9-626EE480C81A} = {B7BDE64F-3592-4C55-9AE9-626EE480C81A}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject

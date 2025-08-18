@@ -9,42 +9,138 @@ namespace CoD4_dm1.PipeServer
 {
     public class NamedPipeServer
     {
-        private readonly string _pipeName = "drainpipe";
+        private readonly string _pipeName;
 
-        public NamedPipeServer()
+        // State
+        private bool _recordState = false;
+        private int _lastRecFrameCount = 0;
+        private Record _recordClass;
+
+        public NamedPipeServer(Record record ,string pipeName = "pipe")
         {
-            
+            _pipeName = pipeName;
+            _recordClass = record;
         }
 
-        public async Task PipeServerStart()
+        /// <summary>
+        /// Protocol:
+        ///  - int (4 byte little-endian)
+        ///  - 0 => heartbeat
+        ///  - 1 => toggle recordState
+        ///  - >1 => frame number
+        /// </summary>
+        public void PipeServerStart()
         {
-            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
+            Console.WriteLine("===============================");
+            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous)) // No async
             {
-                Console.WriteLine("NamedPipe server is running");
-                await pipeServer.WaitForConnectionAsync();
-                Console.WriteLine("Client connected!");
                 
-                using var reader = new StreamReader(pipeServer, Encoding.UTF8, leaveOpen: true);
-                using (var writer = new StreamWriter(pipeServer, Encoding.UTF8, leaveOpen: true) { AutoFlush = true })
+                Console.WriteLine("[ Server ] Pipe is running, Waiting for client...");
+                pipeServer.WaitForConnection();
+                Console.WriteLine("[ Server ] Client connected!");
+
+                try
                 {
-                    string? instruction = await reader.ReadLineAsync();
+                    int incomingInstr;
+                    using var reader = new BinaryReader(pipeServer);
+                    while (pipeServer.IsConnected)
+                    {
+                        // ReadInt32 blocks until 4 bytes are available or client disconnects
+                        try
+                        {
+                            incomingInstr = reader.ReadInt32();
+                        }
+                        catch (EndOfStreamException)
+                        {
+                            Console.WriteLine("[ Server ] Client disconnected!");
+                            break;
+                        }
 
-                    string response = EvaulateMessagae(instruction);
+                        // heartbeat
+                        if (incomingInstr == 0)
+                        {
+                            if (_recordState) 
+                            {
+                                _lastRecFrameCount = _recordClass.AddNewFrameToList();
+                                WriteToPipeAsync(_lastRecFrameCount, pipeServer);
+                                continue;
+                            }
+                            else
+                            {
+                                //Do nothing for now
+                                continue;
+                            }
 
-                    await writer.WriteLineAsync(response);
+                        }
+
+                        if (incomingInstr == 1)
+                        {
+                            // Start Record
+                            if (!_recordState)
+                            {
+                                ToggleRecordState();
+                                _recordClass.InitRecord();
+                                _lastRecFrameCount = _recordClass.AddNewFrameToList();
+
+                                continue;
+                            }
+                            // Stop Record
+                            else
+                            {
+                                ToggleRecordState();
+                                _recordClass.PrintFramesConsole();
+                                continue;
+                            }
+                        }
+
+                        
+                    }
                 }
-
-
-
+                catch (IOException ioEx)
+                {
+                    Console.WriteLine("[ Server ] IO error on pipe: " + ioEx.Message);
+                }
+                finally
+                {
+                    if (pipeServer.IsConnected) pipeServer.Disconnect();
+                    Console.WriteLine("[ Server ] server stopped.");
+                }
             }
         }
 
-        private string EvaulateMessagae(string instruction)
+        private void ToggleRecordState()
         {
-
-            return "";
+                        
+            _recordState = !_recordState;
             
+            if (_recordState)
+            {
+                Console.WriteLine($"Recording started _recordState: {_recordState}");
+            }
+            else
+            {
+                Console.WriteLine($"Recording stopped _recordState: {_recordState}");
+            }
         }
 
+        private async Task WriteToPipeAsync(int lastFrameNumber, NamedPipeServerStream pipe)
+        {
+            byte[] buffer = BitConverter.GetBytes(lastFrameNumber);
+
+            try
+            {
+                await pipe.WriteAsync(buffer, 0, buffer.Length);
+            }
+            catch (IOException ioEx)
+            {
+                Console.WriteLine("Kernel buffer is full somehow ");
+            }
+        }
+        
+
+        public (bool recordState, int lastFrameNumber) GetState()
+        {
+            return (_recordState, _lastRecFrameCount);
+        }
     }
 }

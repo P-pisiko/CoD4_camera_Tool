@@ -28,42 +28,7 @@ namespace CoD4_dm1
         }
 
         
-
-        public List<Structs.Entitys.Camera> StartRecording()
-        {
-            Console.WriteLine("Waiting for the Dvar");
-            byte debug_show_viewpos;
-            do
-            {
-                debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos);
-                Thread.Sleep(250);
-
-            } while (debug_show_viewpos == 0 && debug_show_viewpos !=1);
-
-            while (true)
-            {
-                if(debug_show_viewpos == 0 && debug_show_viewpos != 1)
-                {
-                    Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
-                    for (int i = 0; i < _camFramesList.Count; i++) 
-                    {
-                        var camFrame = _camFramesList[i];
-                        Console.WriteLine($"{i,4} | {camFrame.X,8:F3} {camFrame.Y,8:F3} {camFrame.Z,8:F3} │ {camFrame.Yaw,8:F2} {camFrame.Pitch,8:F2}");
-                        
-                    }
-                    break;
-                }
-                debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos );
-                var CamFrame = ReadCamFrame();
-                _camFramesList.Add(CamFrame);
-
-                var framerate = _memory.ReadMemory<float>(_processHandle, _baseaddress + 0xC6EE228);
-                
-                
-            }
-            return _camFramesList;
-
-        }
+        
 
         private Structs.Entitys.Camera ReadCamFrame()
         {
@@ -77,7 +42,16 @@ namespace CoD4_dm1
             };
 
             return CamFrame;
-           
+        }
+        public void InitRecord()
+        {
+            _camFramesList.Clear();
+        }
+        public int AddNewFrameToList()
+        {
+            var CamFrame = ReadCamFrame();
+            _camFramesList.Add(CamFrame);
+            return _camFramesList.Count;
         }
 
         public void DebugRecord()
@@ -103,6 +77,52 @@ namespace CoD4_dm1
 
             }
 
+        }
+
+        public List<Structs.Entitys.Camera> RecordOnDVAR()
+        {
+            Console.WriteLine("Waiting for the Dvar");
+            byte debug_show_viewpos;
+            do
+            {
+                debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos);
+                Thread.Sleep(250);
+
+            } while (debug_show_viewpos == 0 && debug_show_viewpos != 1);
+
+            while (true)
+            {
+                if (debug_show_viewpos == 0 && debug_show_viewpos != 1)
+                {
+                    Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
+                    for (int i = 0; i < _camFramesList.Count; i++)
+                    {
+                        var camFrame = _camFramesList[i];
+                        Console.WriteLine($"{i,4} | {camFrame.X,8:F3} {camFrame.Y,8:F3} {camFrame.Z,8:F3} │ {camFrame.Yaw,8:F2} {camFrame.Pitch,8:F2}");
+
+                    }
+                    break;
+                }
+                debug_show_viewpos = _memory.ReadMemory<byte>(_processHandle, _baseaddress + Offsets.debug_show_viewpos);
+                var CamFrame = ReadCamFrame();
+                _camFramesList.Add(CamFrame);
+
+                var framerate = _memory.ReadMemory<float>(_processHandle, _baseaddress + 0xC6EE228);
+
+
+            }
+            return _camFramesList;
+
+        }
+
+        public void PrintFramesConsole()
+        {
+            Console.WriteLine($"{"Frm",3} | {"X",8} {"Y",8} {"Z",8} │  {"Yaw",8} {"Pitch",8}");
+            for (int i = 0 ; i < _camFramesList.Count;  i++)
+            {
+                var camFrame = _camFramesList[i];
+                Console.WriteLine($"{i,4} | {camFrame.X,8:F3} {camFrame.Y,8:F3} {camFrame.Z,8:F3} │ {camFrame.Yaw,8:F2} {camFrame.Pitch,8:F2}");
+            }
         }
     }
 
