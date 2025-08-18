@@ -32,7 +32,7 @@ namespace CoD4_dm1.PipeServer
         public void PipeServerStart()
         {
             Console.WriteLine("===============================");
-            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.None)) // No async
+            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous)) // No async
             {
                 
                 Console.WriteLine("[ Server ] Pipe is running, Waiting for client...");
@@ -41,14 +41,14 @@ namespace CoD4_dm1.PipeServer
 
                 try
                 {
+                    int incomingInstr;
                     using var reader = new BinaryReader(pipeServer);
                     while (pipeServer.IsConnected)
                     {
                         // ReadInt32 blocks until 4 bytes are available or client disconnects
-                        int value;
                         try
                         {
-                            value = reader.ReadInt32();
+                            incomingInstr = reader.ReadInt32();
                         }
                         catch (EndOfStreamException)
                         {
@@ -57,21 +57,23 @@ namespace CoD4_dm1.PipeServer
                         }
 
                         // heartbeat
-                        if (value == 0)
+                        if (incomingInstr == 0)
                         {
                             if (_recordState) 
                             {
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
+                                WriteToPipeAsync(_lastRecFrameCount, pipeServer);
+                                continue;
                             }
                             else
                             {
-                                //Do nothing
+                                //Do nothing for now
                                 continue;
                             }
 
                         }
 
-                        if (value == 1)
+                        if (incomingInstr == 1)
                         {
                             // Start Record
                             if (!_recordState)
@@ -79,8 +81,10 @@ namespace CoD4_dm1.PipeServer
                                 ToggleRecordState();
                                 _recordClass.InitRecord();
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
+
                                 continue;
                             }
+                            // Stop Record
                             else
                             {
                                 ToggleRecordState();
@@ -89,8 +93,7 @@ namespace CoD4_dm1.PipeServer
                             }
                         }
 
-                        // value > 1 => frame number (assumption)
-                        UpdateLastFrameNumber(value);
+                        
                     }
                 }
                 catch (IOException ioEx)
@@ -120,12 +123,20 @@ namespace CoD4_dm1.PipeServer
             }
         }
 
-        private void UpdateLastFrameNumber(int frame)
+        private async Task WriteToPipeAsync(int lastFrameNumber, NamedPipeServerStream pipe)
         {
-            _lastRecFrameCount = frame;
-            
-            Console.WriteLine($"Frame received: {frame}");
+            byte[] buffer = BitConverter.GetBytes(lastFrameNumber);
+
+            try
+            {
+                await pipe.WriteAsync(buffer, 0, buffer.Length);
+            }
+            catch (IOException ioEx)
+            {
+                Console.WriteLine("Kernel buffer is full somehow ");
+            }
         }
+        
 
         public (bool recordState, int lastFrameNumber) GetState()
         {
