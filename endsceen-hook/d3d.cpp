@@ -1,8 +1,9 @@
 #include "d3d.h"
 #include "trampolines.h"
-
+#include "FrameCounter.h"
 
 HWND hwnd = nullptr;
+
 
 LPDIRECT3DDEVICE9 d3dDevice = NULL;
 
@@ -32,6 +33,10 @@ void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
     int h = 16;
     int w = 16;
     drawRectangle(1920 / 2 - (h / 2), 1080 / 2 - (w / 2), h, w, D3DCOLOR_ARGB(100, 245, 125, 215));
+
+    if (g_frameCounter) {
+        g_frameCounter->onFrame(p_pDevice);
+    }
 
     // call original function using the trampoline
     trampEndScene(d3dDevice);
