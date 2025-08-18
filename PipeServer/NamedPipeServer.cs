@@ -35,11 +35,12 @@ namespace CoD4_dm1.PipeServer
         /// </summary>
         public void PipeServerStart()
         {
-            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.None)) // No async
+            Console.WriteLine("===============================");
+            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.None)) // No async
             {
-                Console.WriteLine("Pipe is running, Waiting for client...");
+                Console.WriteLine("[ Server ] Pipe is running, Waiting for client...");
                 pipeServer.WaitForConnection();
-                Console.WriteLine("Client connected!");
+                Console.WriteLine("[ Server ] Client connected!");
 
                 try
                 {
@@ -54,7 +55,7 @@ namespace CoD4_dm1.PipeServer
                         }
                         catch (EndOfStreamException)
                         {
-                            Console.WriteLine("Client disconnected.");
+                            Console.WriteLine("Client disconnected!");
                             break;
                         }
 
