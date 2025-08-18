@@ -7,7 +7,7 @@
 #include <ostream>
 #include <string>
 
-// allows to easily switch between retail and openjk version of the game
+
 int debug = 0;
 
 // path to the dll to be injected
@@ -58,7 +58,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
     std::wstring EXE_NAME;
     if (debug == 0)
     {
-        // openjk version C:\\Windows\\system32\\notepad.exe
+        
         //"D:\\SteamLibrary\\steamapps\\common\\Call of Duty 4"
         EXE_DIR = RootPath;
         EXE_NAME = L"iw3mp.exe";
