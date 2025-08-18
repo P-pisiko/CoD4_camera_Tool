@@ -127,14 +127,9 @@ namespace CoD4_dm1.PipeServer
         {
             byte[] buffer = BitConverter.GetBytes(lastFrameNumber);
 
-            try
-            {
-                await pipe.WriteAsync(buffer, 0, buffer.Length);
-            }
-            catch (IOException ioEx)
-            {
-                Console.WriteLine("Kernel buffer is full somehow ");
-            }
+            await pipe.WriteAsync(buffer, 0, buffer.Length);
+            
+            
         }
         
 
