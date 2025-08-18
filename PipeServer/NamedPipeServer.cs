@@ -93,7 +93,6 @@ namespace CoD4_dm1.PipeServer
                             }
                         }
 
-                        
                     }
                 }
                 catch (IOException ioEx)

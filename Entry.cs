@@ -22,9 +22,7 @@ namespace CoD4_dm1
                 p.Kill();
 
             loaderMain(gameRootPath);
-
-            
-
+         
             Process process = null;
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("Waiting for iw3mp.exe");
@@ -65,10 +63,6 @@ namespace CoD4_dm1
 
             NamedPipeServer pipeServer = new NamedPipeServer(rec);
             
-            
-            
-            
-            
             Memory.CloseHandle(processHandle);
             
             
@@ -79,9 +73,9 @@ namespace CoD4_dm1
         /// Find out where game is located.
         /// </summary>
         /// <param name="processName"></param>
-        /// <param name="observedPids"></param>
+        /// <param name="Pids"></param>
         /// <returns></returns>
-        static string GetProcessDirectory(string processName, out int[] observedPids)
+        static string GetProcessDirectory(string processName, out int[] Pids)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write($"Waiting for {processName}.exe");
@@ -95,7 +89,7 @@ namespace CoD4_dm1
                     {
                         // Get directory of the first accessible instance and record all current PIDs
                         string dir = Path.GetDirectoryName(procs[0].MainModule.FileName);
-                        observedPids = procs.Select(p => p.Id).ToArray();
+                        Pids = procs.Select(p => p.Id).ToArray();
                         Console.ForegroundColor = ConsoleColor.Gray;
                         Console.WriteLine($"\nFound root directory: {dir}");
                         return dir;
