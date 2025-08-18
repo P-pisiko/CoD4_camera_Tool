@@ -27,7 +27,7 @@ namespace CoD4_dm1.PipeServer
         }
 
         /// <summary>
-        /// Protokol:
+        /// Protocol:
         ///  - int (4 byte little-endian)
         ///  - 0 => heartbeat
         ///  - 1 => toggle recordState
@@ -55,7 +55,7 @@ namespace CoD4_dm1.PipeServer
                         }
                         catch (EndOfStreamException)
                         {
-                            Console.WriteLine("Client disconnected!");
+                            Console.WriteLine("[ Server ] Client disconnected!");
                             break;
                         }
 
@@ -80,12 +80,12 @@ namespace CoD4_dm1.PipeServer
                 }
                 catch (IOException ioEx)
                 {
-                    Console.WriteLine("IO error on pipe: " + ioEx.Message);
+                    Console.WriteLine("[ Server ] IO error on pipe: " + ioEx.Message);
                 }
                 finally
                 {
                     if (pipeServer.IsConnected) pipeServer.Disconnect();
-                    Console.WriteLine("NamedPipe server stopped.");
+                    Console.WriteLine("[ Server ] server stopped.");
                 }
             }
         }
