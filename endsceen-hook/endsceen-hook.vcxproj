@@ -76,6 +76,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin\Release\net8.0</OutDir>
+    <LibraryPath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -149,6 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="d3d.h" />
+    <ClInclude Include="FrameCounter.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="injectedThread.h" />
@@ -157,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="d3d.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FrameCounter.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="injectedThread.cpp" />
   </ItemGroup>
