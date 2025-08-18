@@ -13,17 +13,13 @@ namespace CoD4_dm1.PipeServer
 
         // State
         private bool _recordState = false;
-        private int _lastFrameNumber = 0;
+        private int _lastRecFrameCount = 0;
+        private Record _recordClass;
 
-        //Hooks
-        public Action? OnStartRecording;
-        public Action? OnStopRecording;
-        public Action<int>? OnFrameNumber;
-        public Action? OnHeartbeat;
-
-        public NamedPipeServer(string pipeName = "drainpipe")
+        public NamedPipeServer(Record record ,string pipeName = "pipe")
         {
             _pipeName = pipeName;
+            _recordClass = record;
         }
 
         /// <summary>
@@ -38,6 +34,7 @@ namespace CoD4_dm1.PipeServer
             Console.WriteLine("===============================");
             using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message, PipeOptions.None)) // No async
             {
+                
                 Console.WriteLine("[ Server ] Pipe is running, Waiting for client...");
                 pipeServer.WaitForConnection();
                 Console.WriteLine("[ Server ] Client connected!");
@@ -59,19 +56,37 @@ namespace CoD4_dm1.PipeServer
                             break;
                         }
 
-                        // Evaluate value
+                        // heartbeat
                         if (value == 0)
                         {
-                            // heartbeat
-                            OnHeartbeat?.Invoke();
-                            // nothing else
-                            continue;
+                            if (_recordState) 
+                            {
+                                _lastRecFrameCount = _recordClass.AddNewFrameToList();
+                            }
+                            else
+                            {
+                                //Do nothing
+                                continue;
+                            }
+
                         }
 
                         if (value == 1)
                         {
-                            ToggleRecordState();
-                            continue;
+                            // Start Record
+                            if (!_recordState)
+                            {
+                                ToggleRecordState();
+                                _recordClass.InitRecord();
+                                _lastRecFrameCount = _recordClass.AddNewFrameToList();
+                                continue;
+                            }
+                            else
+                            {
+                                ToggleRecordState();
+                                _recordClass.PrintFramesConsole();
+                                continue;
+                            }
                         }
 
                         // value > 1 => frame number (assumption)
@@ -98,28 +113,23 @@ namespace CoD4_dm1.PipeServer
             if (_recordState)
             {
                 Console.WriteLine($"Recording started _recordState: {_recordState}");
-                OnStartRecording?.Invoke();
             }
             else
             {
                 Console.WriteLine($"Recording stopped _recordState: {_recordState}");
-                OnStopRecording?.Invoke();
             }
         }
 
         private void UpdateLastFrameNumber(int frame)
         {
-            
-            _lastFrameNumber = frame;
+            _lastRecFrameCount = frame;
             
             Console.WriteLine($"Frame received: {frame}");
-            OnFrameNumber?.Invoke(frame);
         }
 
         public (bool recordState, int lastFrameNumber) GetState()
         {
-            
-            return (_recordState, _lastFrameNumber);
+            return (_recordState, _lastRecFrameCount);
         }
     }
 }
