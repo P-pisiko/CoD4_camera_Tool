@@ -14,7 +14,7 @@ void WINAPI injectedThread(HMODULE hModule)
 
     
     //  wait for the game to be up and running
-    Sleep(1000 * 5);
+    Sleep(1000 * 3);
     g_frameCounter = new FrameCounter();
     // Get the function pointer from the dummy device object
     d3dHelper d3dHelper;
