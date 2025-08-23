@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string>
 #include <map>
-#include "framework.h"
 
 #include "injectedThread.h"
 

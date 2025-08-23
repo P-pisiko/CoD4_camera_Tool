@@ -1,6 +1,6 @@
 #include "hook.h"
 #include <sstream> // debug
-
+#include <Windows.h>
 const char* REL_JMP = "\xE9";
 const char* NOP = "\x90";
 // 1 byte instruction +  4 bytes address
