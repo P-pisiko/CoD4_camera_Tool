@@ -6,13 +6,14 @@
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="injectedThread.cpp" />
     <ClCompile Include="FrameCounter.cpp" />
+    <ClCompile Include="PipeClientIO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="injectedThread.h" />
     <ClInclude Include="trampolines.h" />
     <ClInclude Include="FrameCounter.h" />
+    <ClInclude Include="PipeClientIO.h" />
   </ItemGroup>
 </Project>

@@ -152,9 +152,9 @@
   <ItemGroup>
     <ClInclude Include="d3d.h" />
     <ClInclude Include="FrameCounter.h" />
-    <ClInclude Include="framework.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="injectedThread.h" />
+    <ClInclude Include="PipeClientIO.h" />
     <ClInclude Include="trampolines.h" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +163,7 @@
     <ClCompile Include="FrameCounter.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="injectedThread.cpp" />
+    <ClCompile Include="PipeClientIO.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
