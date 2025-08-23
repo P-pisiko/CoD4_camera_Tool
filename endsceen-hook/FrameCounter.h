@@ -7,7 +7,7 @@ public:
     ~FrameCounter();
 
     void onFrame(LPDIRECT3DDEVICE9 device);
-
+    int registedFrame;
 private:
     int frameCount;
     ID3DXFont* font;

@@ -1,4 +1,5 @@
 #include "PipeClientIO.h"
+#include "FrameCounter.h"
 #include <string>
 PipeClientIO* g_pipeClient = nullptr;
 
@@ -25,12 +26,36 @@ void PipeClientIO::Send(SHORT v) {
 		else
 		{
 			MessageBox(0, "[PIPE_IO] WriteFile failed to many writes in the queued up", ":(", 0);
+			Disconnect();
+			g_pipeClient = nullptr;
 		}
 	}
 
 }
 
+void PipeClientIO::RecivingThread() {
+	while (hPipe != INVALID_HANDLE_VALUE) {
+		uint8_t buffer[5] = {};
+		DWORD bytesRead = 0;
+		
+		BOOL err = ReadFile(
+			hPipe,
+			buffer,
+			sizeof(buffer),
+			&bytesRead,
+			NULL
+		);
 
+		if (err == ERROR_BROKEN_PIPE) {
+			break;
+		}
+
+		if (bytesRead >= 5) {
+			g_frameCounter->registedFrame = *reinterpret_cast<int*>(&buffer[0]);
+			
+		}
+	}
+}
 
 void PipeClientIO::Disconnect() {
 	if (hPipe != INVALID_HANDLE_VALUE && hPipe != NULL) {

@@ -12,6 +12,7 @@ public:
 	void Connect(const char* pipeName);
 	void Disconnect();
 	void Send(SHORT v);
+	void RecivingThread();
 
 private:
 	const char* pipeName;

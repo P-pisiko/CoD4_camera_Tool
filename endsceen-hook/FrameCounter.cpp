@@ -4,6 +4,7 @@ FrameCounter* g_frameCounter = nullptr;
 
 FrameCounter::FrameCounter() {
     frameCount = 0;
+    registedFrame = 0;
     font = nullptr;
 }
 
@@ -57,6 +58,6 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
     // Line 1
     r.top = top + lineHeight;
     r.bottom = top + lineHeight * 2;
-    sprintf_s(buf, "Registed Frame: 0");
+    sprintf_s(buf, "Registed Frame: %d", registedFrame);
     font->DrawTextA(NULL, buf, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE, D3DCOLOR_ARGB(255, 255, 255, 0));
 }
