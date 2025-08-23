@@ -16,7 +16,7 @@ namespace CoD4_dm1.PipeServer
         private int _lastRecFrameCount = 0;
         private Record _recordClass;
 
-        public NamedPipeServer(Record record ,string pipeName = "pipe")
+        public NamedPipeServer(Record record ,string pipeName = "pipeserver")
         {
             _pipeName = pipeName;
             _recordClass = record;
@@ -31,7 +31,7 @@ namespace CoD4_dm1.PipeServer
         /// </summary>
         public void PipeServerStart()
         {
-            Console.WriteLine("===============================");
+            Console.WriteLine("===================================");
             using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous)) // No async
             {
                 
@@ -48,7 +48,8 @@ namespace CoD4_dm1.PipeServer
                         // ReadInt32 blocks until 4 bytes are available or client disconnects
                         try
                         {
-                            incomingInstr = reader.ReadInt32();
+                            //Console.WriteLine($"Raw Bytes recived: {reader.ReadBytes()}")
+                            incomingInstr = reader.ReadInt16();
                         }
                         catch (EndOfStreamException)
                         {
@@ -67,7 +68,7 @@ namespace CoD4_dm1.PipeServer
                             }
                             else
                             {
-                                //Do nothing for now
+                                Console.WriteLine($"Hearhbeat recived: {incomingInstr}");
                                 continue;
                             }
 
@@ -91,6 +92,10 @@ namespace CoD4_dm1.PipeServer
                                 _recordClass.PrintFramesConsole();
                                 continue;
                             }
+                        }
+                        else 
+                        {
+                            Console.WriteLine($"Unkonw instruction: {incomingInstr}");
                         }
 
                     }

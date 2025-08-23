@@ -62,6 +62,7 @@ namespace CoD4_dm1
             Record rec = new Record(baseAddress,processHandle);
 
             NamedPipeServer pipeServer = new NamedPipeServer(rec);
+            pipeServer.PipeServerStart();
             
             Memory.CloseHandle(processHandle);
             
