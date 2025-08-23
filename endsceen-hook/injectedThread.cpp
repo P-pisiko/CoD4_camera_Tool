@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>
 #include "FrameCounter.h"
-
+#include "PipeClientIO.h"
 endSceneFunc trampEndScene = nullptr;
 unsigned char endSceneBytes[7];
 
@@ -16,6 +16,7 @@ void WINAPI injectedThread(HMODULE hModule)
     //  wait for the game to be up and running
     Sleep(1000 * 3);
     g_frameCounter = new FrameCounter();
+    g_pipeClient = new PipeClientIO();
     // Get the function pointer from the dummy device object
     d3dHelper d3dHelper;
     char* ogEndSceneAddress = d3dHelper.d3d9DeviceTable[42];
