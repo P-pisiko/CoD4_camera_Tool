@@ -1,0 +1,37 @@
+#include "PipeClientIO.h"
+#include <string>
+PipeClientIO* g_pipeClient = nullptr;
+
+PipeClientIO::PipeClientIO() {
+	pipeName = R"(\\.\pipe\pipeserver)";
+	Connect(pipeName);
+}
+
+
+
+
+void PipeClientIO::Disconnect() {
+	if (hPipe != INVALID_HANDLE_VALUE && hPipe != NULL) {
+		CloseHandle(hPipe);
+		hPipe = NULL;
+	}
+}
+
+void PipeClientIO::Connect(const char* pipeName) {
+	hPipe = CreateFileA(
+		pipeName,
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_OVERLAPPED,
+		NULL
+	);
+
+	if (hPipe == INVALID_HANDLE_VALUE)
+	{
+		MessageBox(0, std::string("[PipeClient] Failed to get a handle to pipe.").c_str(),">:(", 0);
+	}
+
+}
+
