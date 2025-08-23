@@ -99,7 +99,7 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
         exit(88);
     }
 
-    Sleep(1);
+    Sleep(50);
 
     // Close process and thread handles
     // this does not stop the game
