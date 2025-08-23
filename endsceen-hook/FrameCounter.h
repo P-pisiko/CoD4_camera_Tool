@@ -6,12 +6,12 @@ public:
     FrameCounter();
     ~FrameCounter();
 
-    void initDevice(LPDIRECT3DDEVICE9 device);
     void onFrame(LPDIRECT3DDEVICE9 device);
 
 private:
     int frameCount;
     ID3DXFont* font;
+    void initDevice(LPDIRECT3DDEVICE9 device);
 };
 
 // Declare the global pointer here as `extern`

@@ -30,7 +30,7 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
 
     // size setting
     const int left = 10;
-    const int top = 10;
+    const int top = 20;
     const int padding = 6;
     const int lineHeight = 24; // roughly matches D3DXCreateFont size 24
     const int numLines = 2;
