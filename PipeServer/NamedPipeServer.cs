@@ -45,7 +45,7 @@ namespace CoD4_dm1.PipeServer
                     using var reader = new BinaryReader(pipeServer);
                     while (pipeServer.IsConnected)
                     {
-                        // ReadInt32 blocks until 4 bytes are available or client disconnects
+                        // ReadInt32 blocks until 2 bytes are available or client disconnects
                         try
                         {
                             //Console.WriteLine($"Raw Bytes recived: {reader.ReadBytes()}")
@@ -68,7 +68,6 @@ namespace CoD4_dm1.PipeServer
                             }
                             else
                             {
-                                Console.WriteLine($"Hearhbeat recived: {incomingInstr}");
                                 continue;
                             }
 

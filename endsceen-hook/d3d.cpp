@@ -1,6 +1,7 @@
 #include "d3d.h"
 #include "trampolines.h"
 #include "FrameCounter.h"
+#include "PipeClientIO.h"
 
 HWND hwnd = nullptr;
 
@@ -34,9 +35,13 @@ void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
     int w = 16;
     drawRectangle(1920 / 2 - (h / 2), 1080 / 2 - (w / 2), h, w, D3DCOLOR_ARGB(100, 245, 125, 215));
 
-    if (g_frameCounter) {
+    if (g_frameCounter && g_pipeClient) {
         g_frameCounter->onFrame(p_pDevice);
+        SHORT key = GetAsyncKeyState(VK_NUMPAD5);
+        std::int16_t v = (key & 0x0001) ? 1 : 0;
+        g_pipeClient->Send(v);
     }
+    
 
     // call original function using the trampoline
     trampEndScene(d3dDevice);
