@@ -11,7 +11,7 @@ public:
 	
 	void Connect(const char* pipeName);
 	void Disconnect();
-	void Send(SHORT v);
+
 
 private:
 	const char* pipeName;
