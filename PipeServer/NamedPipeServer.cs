@@ -1,10 +1,7 @@
-﻿using System;
+﻿using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO.Pipes;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 namespace CoD4_dm1.PipeServer
 {
     public class NamedPipeServer
@@ -24,7 +21,7 @@ namespace CoD4_dm1.PipeServer
 
         /// <summary>
         /// Protocol:
-        ///  - int (4 byte little-endian)
+        ///  - int (2 byte little-endian)
         ///  - 0 => heartbeat
         ///  - 1 => toggle recordState
         ///  - >1 => frame number
@@ -45,7 +42,7 @@ namespace CoD4_dm1.PipeServer
                     using var reader = new BinaryReader(pipeServer);
                     while (pipeServer.IsConnected)
                     {
-                        // ReadInt32 blocks until 4 bytes are available or client disconnects
+                        // ReadInt32 blocks until 2 bytes are available or client disconnects
                         try
                         {
                             //Console.WriteLine($"Raw Bytes recived: {reader.ReadBytes()}")
@@ -63,12 +60,11 @@ namespace CoD4_dm1.PipeServer
                             if (_recordState) 
                             {
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
-                                WriteToPipeAsync(_lastRecFrameCount, pipeServer);
+                                
                                 continue;
                             }
                             else
                             {
-                                Console.WriteLine($"Hearhbeat recived: {incomingInstr}");
                                 continue;
                             }
 
@@ -134,11 +130,14 @@ namespace CoD4_dm1.PipeServer
             await pipe.WriteAsync(buffer, 0, buffer.Length);
             
         }
-        
 
-        public (bool recordState, int lastFrameNumber) GetState()
+        private void Send(int frameCount,bool recordState, NamedPipeServerStream pipe)
         {
-            return (_recordState, _lastRecFrameCount);
+            Span<byte> buf = stackalloc byte[5];
+            BinaryPrimitives.WriteInt32LittleEndian(buf, frameCount);
+            buf[4] = recordState ? (byte)1 : (byte)0;
+            pipe.Write(buf);
+            pipe.Flush();
         }
     }
 }
