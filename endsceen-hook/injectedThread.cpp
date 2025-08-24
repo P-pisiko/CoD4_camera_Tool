@@ -12,7 +12,6 @@ unsigned char endSceneBytes[7];
 void WINAPI injectedThread(HMODULE hModule)
 {
 
-    
     //  wait for the game to be up and running
     Sleep(1000 * 3);
     g_frameCounter = new FrameCounter();

@@ -11,7 +11,7 @@ namespace CoD4_dm1.PipeServer
         // State
         private bool _recordState = false;
         private int _lastRecFrameCount = 0;
-        private Record _recordClass;
+        private readonly Record _recordClass;
 
         public NamedPipeServer(Record record ,string pipeName = "pipeserver")
         {
@@ -60,7 +60,7 @@ namespace CoD4_dm1.PipeServer
                             if (_recordState) 
                             {
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
-                                
+                                Send(_lastRecFrameCount, _recordState, pipeServer);
                                 continue;
                             }
                             else
