@@ -6,14 +6,36 @@
 #include <thread>
 #include <ostream>
 #include <string>
-
+#include <cstdio>
+#include <cstring>
 
 int debug = 0;
 
 // path to the dll to be injected
-char dllPath[256] = "C:\\Users\\T-Box\\source\\repos\\CoD4-dm1\\bin\\Release\\net8.0\\endsceen-hook.dll"; //ACTÝVE
+char dllPath[MAX_PATH] = ""; 
 
 std::string dllname = "endsceen-hook.dll";
+
+bool GetCrtDir(char* outDir, size_t outSize)
+{
+    char exePath[MAX_PATH];
+    if (!GetModuleFileNameA(NULL, exePath, MAX_PATH)) {
+        return false;
+    }
+
+    char* lastSlash = strrchr(exePath, '\\');
+    if (lastSlash) {
+        *lastSlash = '\0'; 
+    }
+
+    if (strlen(exePath) + 1 > outSize) {
+        return false; 
+    }
+
+    strcpy_s(outDir, outSize, exePath);
+    return true;
+}
+
 BOOL FileExists(LPCTSTR path)
 {
     DWORD dwAttrib = GetFileAttributes(path);
@@ -53,20 +75,25 @@ BOOL checkAlreadyInjected(DWORD PID, std::string moduleName)
 
 extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
 {
+    char crtDir[MAX_PATH];
+    if (!GetCrtDir(crtDir, MAX_PATH)) {
+        std::cerr << "Failed to get current directory for some reason" << std::endl;
+        return 1;
+    }
+    sprintf_s(dllPath, "%s\\endsceen-hook.dll", crtDir);
 
     std::wstring EXE_DIR;
     std::wstring EXE_NAME;
     if (debug == 0)
     {
         
-        //"D:\\SteamLibrary\\steamapps\\common\\Call of Duty 4"
+        //"Games Root Path"
         EXE_DIR = RootPath;
         EXE_NAME = L"iw3mp.exe";
     }
 
     else
     {
-        // Retail
         EXE_DIR = L"C:\\Windows\\system32";
         EXE_NAME = L"notepad.exe";
     }
