@@ -20,8 +20,6 @@ namespace CoD4_dm1
             _camFramesList = new List<Structs.Entitys.Camera>();
         }
 
-        
-        
 
         private Structs.Entitys.Camera ReadCamFrame()
         {
@@ -70,6 +68,11 @@ namespace CoD4_dm1
 
             }
 
+        }
+
+        public List<Structs.Entitys.Camera> GetCamFrameList()
+        {
+            return _camFramesList;
         }
 
         public List<Structs.Entitys.Camera> RecordOnDVAR()

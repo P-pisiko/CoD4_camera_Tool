@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -9,14 +10,15 @@ namespace CoD4_dm1.FileFormats
 {
     public class Csv
     {
-        public Csv(List<Structs.Entitys.Camera> camList) 
+
+        public void ExportToFile(List<Structs.Entitys.Camera> camList)
         {
             ///<summary>
             /// Appearntly this forces float/double use . as a decimal seperator
             /// </summary>
-            var inv = CultureInfo.InvariantCulture; 
+            var inv = CultureInfo.InvariantCulture;
 
-            using var writer = new StreamWriter("positions.csv");
+            using var writer = new StreamWriter(DateTime.Now.ToString("g"));
             writer.WriteLine("frame,x,y,z,yaw,pitch");
             for (int i = 0; i < camList.Count; i++)
             {
@@ -30,6 +32,38 @@ namespace CoD4_dm1.FileFormats
                 f.Pitch,
                 f.Yaw));
             }
+        }
+
+        public async Task ExportToFileAsync(List<Structs.Entitys.Camera> camList)
+        {
+            Console.Write("Stopwatch Started\n");
+            var sw = Stopwatch.StartNew();
+
+            var inv = CultureInfo.InvariantCulture;
+            var fileName = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".csv";
+
+            var sb = new StringBuilder(camList.Count * 64); // rough prealloc
+
+            sb.AppendLine("frame,x,y,z,yaw,pitch");
+
+            for (int i = 0; i < camList.Count; i++)
+            {
+                var f = camList[i];
+                sb.AppendFormat(inv,
+                    "{0},{1},{2},{3},{4},{5}",
+                    i,
+                    f.X,
+                    f.Y,
+                    f.Z,
+                    f.Pitch,
+                    f.Yaw);
+                sb.AppendLine();
+            }
+            sw.Stop();
+            Console.WriteLine($"It took {sw.ElapsedMilliseconds}ms to build the list in mem"); 
+
+            await File.WriteAllTextAsync(fileName, sb.ToString());
+
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using CoD4_dm1.config;
-using CoD4_dm1.PipeServer;
+﻿using CoD4_dm1.PipeServer;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -59,8 +58,8 @@ namespace CoD4_dm1
             Console.WriteLine($"Got a handle to {targetProcess.ProcessName} {targetProcess.Id}");
             
             Record rec = new Record(baseAddress,processHandle);
-
             NamedPipeServer pipeServer = new NamedPipeServer(rec);
+            
             pipeServer.PipeServerStart();
             
             Memory.CloseHandle(processHandle);
@@ -96,7 +95,7 @@ namespace CoD4_dm1
                     }
                     catch
                     {
-                        // Access denied or process exited while accessing MainModule — try again
+                        // Access denied or process exited while accessing MainModule
                     }
                 }
 

@@ -62,7 +62,7 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
     sprintf_s(buf, "Registed Frame: %d", registedFrame);
     font->DrawTextA(NULL, buf, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE, D3DCOLOR_ARGB(255, 255, 255, 0));
 
-    r.top = top + lineHeight;
+    r.top = top + lineHeight * 2;
     r.bottom = top + lineHeight * 3;
     sprintf_s(buf, "Current Record State: %d", recState);
     font->DrawTextA(NULL, buf, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE, D3DCOLOR_ARGB(255, 255, 255, 0));

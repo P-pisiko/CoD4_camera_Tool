@@ -1,4 +1,5 @@
-﻿using System.Buffers.Binary;
+﻿using CoD4_dm1.FileFormats;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Threading.Tasks;
@@ -8,15 +9,16 @@ namespace CoD4_dm1.PipeServer
     {
         private readonly string _pipeName;
 
-        // State
         private bool _recordState = false;
         private int _lastRecFrameCount = 0;
         private readonly Record _recordClass;
+        private readonly Csv _csv;
 
         public NamedPipeServer(Record record ,string pipeName = "pipeserver")
         {
             _pipeName = pipeName;
             _recordClass = record;
+            _csv = new Csv();
         }
 
         /// <summary>
@@ -24,12 +26,12 @@ namespace CoD4_dm1.PipeServer
         ///  - int (2 byte little-endian)
         ///  - 0 => heartbeat
         ///  - 1 => toggle recordState
-        ///  - >1 => frame number
+        ///  - >1 => IDK
         /// </summary>
         public void PipeServerStart()
         {
             Console.WriteLine("===================================");
-            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous)) // No async
+            using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
             {
                 
                 Console.WriteLine("[ Server ] Pipe is running, Waiting for client...");
@@ -65,6 +67,7 @@ namespace CoD4_dm1.PipeServer
                             }
                             else
                             {
+                                Send(_lastRecFrameCount, _recordState, pipeServer);
                                 continue;
                             }
 
@@ -78,14 +81,15 @@ namespace CoD4_dm1.PipeServer
                                 ToggleRecordState();
                                 _recordClass.InitRecord();
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
-
+                                Send(_lastRecFrameCount, _recordState, pipeServer);
                                 continue;
                             }
                             // Stop Record
                             else
                             {
                                 ToggleRecordState();
-                                _recordClass.PrintFramesConsole();
+                                //_recordClass.PrintFramesConsole();
+                                _csv.ExportToFileAsync(_recordClass.GetCamFrameList());
                                 continue;
                             }
                         }
@@ -120,6 +124,7 @@ namespace CoD4_dm1.PipeServer
             else
             {
                 Console.WriteLine($"Recording stopped _recordState: {_recordState}");
+                _lastRecFrameCount = 0;
             }
         }
 
