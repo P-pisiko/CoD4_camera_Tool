@@ -26,8 +26,13 @@ void WINAPI injectedThread(HMODULE hModule)
     // Keep thread alive until "DELETE" was hit
     while (!GetAsyncKeyState(VK_DELETE))
     {
+        
         Sleep(1000);
     }
+    delete g_pipeClient;
+    delete g_frameCounter;
+    g_pipeClient = nullptr;
+    g_frameCounter = nullptr;
 
     // uninject and unhook
     restore(ogEndSceneAddress, endSceneBytes, 7, "EndScene");

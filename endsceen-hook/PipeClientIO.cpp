@@ -13,6 +13,11 @@ PipeClientIO::PipeClientIO() {
 	WorkerThread.detach();
 }
 
+PipeClientIO::~PipeClientIO() {
+	Disconnect();
+
+}
+
 void PipeClientIO::Send(SHORT v) {
 
 	bool res = WriteFile(
