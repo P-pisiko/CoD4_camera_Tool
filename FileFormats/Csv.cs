@@ -10,31 +10,10 @@ namespace CoD4_dm1.FileFormats
 {
     public class Csv
     {
-
-        public void ExportToFile(List<Structs.Entitys.Camera> camList)
-        {
-            ///<summary>
-            /// Appearntly this forces float/double use . as a decimal seperator
-            /// </summary>
-            var inv = CultureInfo.InvariantCulture;
-
-            using var writer = new StreamWriter(DateTime.Now.ToString("g"));
-            writer.WriteLine("frame,x,y,z,yaw,pitch");
-            for (int i = 0; i < camList.Count; i++)
-            {
-                var f = camList[i];
-                writer.WriteLine(string.Format(inv,
-                "{0},{1},{2},{3},{4},{5}",
-                i,
-                f.X,
-                f.Y,
-                f.Z,
-                f.Pitch,
-                f.Yaw));
-            }
-        }
-
-        public async Task ExportToFileAsync(List<Structs.Entitys.Camera> camList)
+        ///<summary>
+        /// Appearntly this forces float/double use . as a decimal seperator
+        /// </summary>
+        public async Task ExportToCsvAsync(List<Structs.Entitys.Camera> camList)
         {
             Console.Write("Stopwatch Started\n");
             var sw = Stopwatch.StartNew();
