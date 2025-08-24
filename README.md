@@ -6,6 +6,7 @@ This repository designed to be used with [C2M](https://github.com/sheilan102/C2M
 
 ### This Alpha Release Includes:
 
+- Support for CoD4x 21.1 for now
 - Simple ingame indicator
 - CSV format for export
 - Python script for importing csv in to Blender
