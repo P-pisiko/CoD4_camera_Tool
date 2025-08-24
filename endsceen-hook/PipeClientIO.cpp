@@ -1,12 +1,16 @@
 #include "PipeClientIO.h"
 #include "FrameCounter.h"
 #include <string>
+#include <thread>
 PipeClientIO* g_pipeClient = nullptr;
 
 PipeClientIO::PipeClientIO() {
 	pipeName = R"(\\.\pipe\pipeserver)";
 	overlapped = {};
 	Connect(pipeName);
+
+	std::thread WorkerThread(&PipeClientIO::ReciveLoopStart, this);
+	WorkerThread.detach();
 }
 
 void PipeClientIO::Send(SHORT v) {
@@ -33,7 +37,7 @@ void PipeClientIO::Send(SHORT v) {
 
 }
 
-void PipeClientIO::RecivingThread() {
+void PipeClientIO::ReciveLoopStart() {
 	while (hPipe != INVALID_HANDLE_VALUE) {
 		uint8_t buffer[5] = {};
 		DWORD bytesRead = 0;
@@ -52,7 +56,7 @@ void PipeClientIO::RecivingThread() {
 
 		if (bytesRead >= 5) {
 			g_frameCounter->registedFrame = *reinterpret_cast<int*>(&buffer[0]);
-			
+			g_frameCounter->recState = buffer[4] != 0; // bool can be more than 1 byte so if its not 0 then take it as 1.
 		}
 	}
 }

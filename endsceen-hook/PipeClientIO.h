@@ -12,7 +12,7 @@ public:
 	void Connect(const char* pipeName);
 	void Disconnect();
 	void Send(SHORT v);
-	void RecivingThread();
+	void ReciveLoopStart();
 
 private:
 	const char* pipeName;
