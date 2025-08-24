@@ -6,6 +6,7 @@ FrameCounter::FrameCounter() {
     frameCount = 0;
     registedFrame = 0;
     font = nullptr;
+    recState = false;
 }
 
 FrameCounter::~FrameCounter() {
@@ -34,7 +35,7 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
     const int top = 40;
     const int padding = 6;
     const int lineHeight = 24; // roughly matches D3DXCreateFont size 24
-    const int numLines = 2;
+    const int numLines = 3;
     
     RECT bg;
     bg.left = left - padding;
@@ -59,5 +60,10 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
     r.top = top + lineHeight;
     r.bottom = top + lineHeight * 2;
     sprintf_s(buf, "Registed Frame: %d", registedFrame);
+    font->DrawTextA(NULL, buf, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE, D3DCOLOR_ARGB(255, 255, 255, 0));
+
+    r.top = top + lineHeight;
+    r.bottom = top + lineHeight * 3;
+    sprintf_s(buf, "Current Record State: %d", recState);
     font->DrawTextA(NULL, buf, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE, D3DCOLOR_ARGB(255, 255, 255, 0));
 }
