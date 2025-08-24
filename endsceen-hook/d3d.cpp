@@ -30,9 +30,6 @@ void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
         d3dDevice = p_pDevice;
     }
 
-    int h = 16;
-    int w = 16;
-    drawRectangle(1920 / 2 - (h / 2), 1080 / 2 - (w / 2), h, w, D3DCOLOR_ARGB(100, 245, 125, 215));
 
     if (g_frameCounter && g_pipeClient) {
         g_frameCounter->onFrame(p_pDevice);
