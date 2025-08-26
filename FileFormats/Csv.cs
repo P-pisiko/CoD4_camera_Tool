@@ -34,8 +34,8 @@ namespace CoD4_dm1.FileFormats
                     f.X,
                     f.Y,
                     f.Z,
-                    f.Pitch,
-                    f.Yaw);
+                    f.Yaw,
+                    f.Pitch);
                 sb.AppendLine();
             }
             sw.Stop();
