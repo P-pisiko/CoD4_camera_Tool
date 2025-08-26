@@ -1,7 +1,7 @@
 ﻿"""
-COD4 Blender camera importer
+COD4 Blender camera importer
 ─────────────────────────────
- reads a CSV expor
+reads a CSV expor
  
 """
 
@@ -44,7 +44,7 @@ def cod4_pitch_to_blender(pitch_deg: float) -> float:
 
 def cod4_yaw_to_blender(yaw_deg: float) -> float:
     """Convert CoD4 yaw to Blender radians (Z axis)."""
-    return math.radians(-yaw_deg)   # flip because Blender's +Y is back
+    return math.radians(yaw_deg)
 
 with CSV_PATH.open(newline="") as f:
     reader = csv.DictReader(f)
@@ -60,16 +60,18 @@ with CSV_PATH.open(newline="") as f:
 
         # rotation
         pitch = cod4_pitch_to_blender(float(row["pitch"]))
+        pitch = pitch + math.radians(90.0)
         yaw   = cod4_yaw_to_blender(float(row["yaw"]))
+        yaw = yaw - math.radians(90.0)
         roll  = 0.0 
 
         scene.frame_set(frame_idx)
         cam.location       = (x, y, z)
-        cam.rotation_euler = (pitch, 0.0, yaw+180)
+        cam.rotation_euler = (pitch, 0.0, yaw)
 
         cam.keyframe_insert(data_path="location",       frame=frame_idx)
         cam.keyframe_insert(data_path="rotation_euler", frame=frame_idx)
 
 scene.frame_start = 0
 scene.frame_end   = max_frame
-print(f"Imported {max_frame + 1} frames at {RECORD_FPS} fps from {CSV_PATH.name}")
+print(f"Imported {max_frame + 1} frames at {RECORD_FPS} fps from {CSV_PATH.name}")
