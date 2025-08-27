@@ -12,6 +12,8 @@ This repository designed to be used with [C2M](https://github.com/sheilan102/C2M
 - Python script for importing csv in to Blender
 - Directx 9 Hook
 
+[![Watch on Odysee](https://thumbnails.odycdn.com/optimize/s:390:220/quality:85/plain/https://thumbs.odycdn.com/caf0c0b364c9cdbe885a1565054724da.webp&quot)](https://odysee.com/@nakedleisure:f/Cod4CamTool:5)
+
 
 ## Building & Usage
 
