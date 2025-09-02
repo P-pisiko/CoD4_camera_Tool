@@ -12,7 +12,7 @@
 
 *offsets.txt
 *cercop.txt
-
+*csv_import.py.old
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

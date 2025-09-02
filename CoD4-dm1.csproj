@@ -18,8 +18,4 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Blender-ImportScript\" />
-  </ItemGroup>
-
 </Project>
