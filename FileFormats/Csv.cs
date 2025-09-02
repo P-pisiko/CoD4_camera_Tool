@@ -11,7 +11,7 @@ namespace CoD4_dm1.FileFormats
     public class Csv
     {
         ///<summary>
-        /// Appearntly this forces float/double use . as a decimal seperator
+        /// Appearntly CultureInfo.InvariantCulture forces float/double use . as a decimal seperator
         /// </summary>
         public async Task ExportToCsvAsync(List<Structs.Entitys.Camera> camList)
         {
