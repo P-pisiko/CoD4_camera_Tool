@@ -34,9 +34,16 @@ namespace CoD4_dm1
 
             return CamFrame;
         }
-        public void InitRecord()
+        public Structs.Entitys.Header InitRecord()
         {
             _camFramesList.Clear();
+            return new Structs.Entitys.Header
+            {   //Peak var naming
+                ConstCaptureFps = _memory.ReadMemory<float>(_processHandle, _baseaddress + Offsets.FpsCounterAddress),
+                MapName = _memory.ReadString(_processHandle, _baseaddress + Offsets.CurrentMap),
+                TotalFrames = -1
+            };
+
         }
         public int AddNewFrameToList()
         {

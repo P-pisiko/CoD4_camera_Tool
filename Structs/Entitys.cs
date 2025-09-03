@@ -21,5 +21,14 @@ namespace CoD4_dm1.Structs
             public float Yaw;
             public float Pitch;
         }
+
+        public struct Header
+        {
+            public float ConstCaptureFps;
+            public string MapName;
+            public int TotalFrames;
+            
+        }
     }
+
 }
