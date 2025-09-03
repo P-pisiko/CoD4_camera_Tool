@@ -35,9 +35,9 @@ namespace CoD4_dm1.config
         //iw3mp.exe+C7C5E88
         //iw3mp.exe+C7C5E98
 
-        public static IntPtr CurrentMap { get; } = 0xA36218; //iw3mp.exe+A36218
+        public static IntPtr CurrentMap { get; } = 0xA36218; //iw3mp.exe+A36218 code_post_gfx_mp static 
 
-        public static IntPtr CurrentMap2 { get; } = 0xBFF270; //iw3mp.exe+BFF270
+        public static IntPtr CurrentMap2 { get; } = 0xBFF270; //iw3mp.exe+BFF270 static
         //
         //public static IntPtr debug_show_viewpos { get; } = 0xC7C5E98;
 
