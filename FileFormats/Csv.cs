@@ -15,7 +15,6 @@ namespace CoD4_dm1.FileFormats
         /// </summary>
         public async Task ExportToCsvAsync(List<Structs.Entitys.Camera> camList)
         {
-            Console.Write("Stopwatch Started\n");
             var sw = Stopwatch.StartNew();
 
             var inv = CultureInfo.InvariantCulture;
