@@ -11,7 +11,7 @@ namespace CoD4_dm1.FileFormats
     {
         private const float INC_TO_METRE = 0.0254f;
 
-        public async static Task ExportToGLB(Structs.Entitys.Header header, List<Structs.Entitys.Camera> camList)
+        public static Task ExportToGLB(Structs.Entitys.Header header, List<Structs.Entitys.Camera> camList)
         {
             Console.WriteLine("SOME DUM SHİT GOİNG ON");
             var flipY = false;
@@ -43,13 +43,13 @@ namespace CoD4_dm1.FileFormats
                 float time = i / header.ConstCaptureFps;
 
 
-                // position: inches -> meters, optional Y flip
+                // position: inches -> meters, 
                 float x = f.X * INC_TO_METRE;
                 float y = (flipY ? -f.Y : f.Y) * INC_TO_METRE;
                 float z = f.Z * INC_TO_METRE;
                 var pos = new Vector3(x, y, z);
 
-                // rotation: same math as your Blender importer
+                // rotation: NO ROTATIONAL TRANSFORMATION IS APPLYING TO ANYTHING Huhh ???
                 float signedPitchDeg = (f.Pitch <= 85f) ? -f.Pitch : 360f - f.Pitch;
                 float pitch = (float)(signedPitchDeg * Math.PI / 180.0) + (float)(Math.PI / 2.0); // +90°
                 float yaw = (float)(f.Yaw * Math.PI / 180.0) - (float)(Math.PI / 2.0);           // -90°
@@ -59,15 +59,20 @@ namespace CoD4_dm1.FileFormats
 
                 translationKeys.Add((time, pos));
                 rotationKeys.Add((time, quat));
+            }
 
+            if (camNode != null)
+            {
                 camNode.WithTranslationAnimation("Camera_Translation", translationKeys.ToArray());
                 camNode.WithRotationAnimation("Camera_Rotation", rotationKeys.ToArray());
-
-                model.SaveGLB("gbl-dosyası");
-
             }
-            Console.WriteLine($"Done Writing to gbl file. Frames:{camList.Count} FPS:{header.ConstCaptureFps}");
+            // Very descriptive filename, ehe splended indeed !
+            var safeMapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
+            var filename = $"{safeMapName}_BROKEN.glb";
 
+            model.SaveGLB(filename);
+            Console.WriteLine($"Done Writing to glb file: {filename}. Frames:{camList.Count} FPS:{header.ConstCaptureFps}");
+            return Task.CompletedTask;
         }
 
     }
