@@ -46,9 +46,9 @@ namespace CoD4_dm1
             return MemoryMarshal.Read<T>(new ReadOnlySpan<byte>(buf, size));
         }
 
-        unsafe public string ReadString(IntPtr processHandle, IntPtr address, int maxLength = 256)
+        unsafe public string ReadString(IntPtr processHandle, IntPtr address, int maxLength = 64)
         {
-            const int StackLimit = 256;
+            const int StackLimit = 128;
             if (maxLength > StackLimit)
                 throw new ArgumentOutOfRangeException(nameof(maxLength), $"maxLength must be ≤ {StackLimit} bytes for stack allocation.");
 

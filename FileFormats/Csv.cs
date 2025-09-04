@@ -13,9 +13,8 @@ namespace CoD4_dm1.FileFormats
         ///<summary>
         /// Appearntly CultureInfo.InvariantCulture forces float/double use . as a decimal seperator
         /// </summary>
-        public async Task ExportToCsvAsync(List<Structs.Entitys.Camera> camList)
+        public Task ExportToCsvAsync(List<Structs.Entitys.Camera> camList)
         {
-            Console.Write("Stopwatch Started\n");
             var sw = Stopwatch.StartNew();
 
             var inv = CultureInfo.InvariantCulture;
@@ -41,8 +40,8 @@ namespace CoD4_dm1.FileFormats
             sw.Stop();
             Console.WriteLine($"It took {sw.ElapsedMilliseconds}ms to build the list in mem"); 
 
-            await File.WriteAllTextAsync(fileName, sb.ToString());
-
+            File.WriteAllTextAsync(fileName, sb.ToString());
+            return Task.CompletedTask;
         }
     }
 }

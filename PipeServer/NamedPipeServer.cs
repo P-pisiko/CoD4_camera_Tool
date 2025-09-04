@@ -11,6 +11,7 @@ namespace CoD4_dm1.PipeServer
 
         private bool _recordState = false;
         private int _lastRecFrameCount = 0;
+        private Structs.Entitys.Header _header;
         private readonly Record _recordClass;
         private readonly Csv _csv;
 
@@ -79,7 +80,8 @@ namespace CoD4_dm1.PipeServer
                             if (!_recordState)
                             {
                                 ToggleRecordState();
-                                _recordClass.InitRecord();
+                                _header = _recordClass.InitRecord();
+                                Console.WriteLine($"Header info:\n RecordFps: {_header.ConstCaptureFps}, CurrentMap: {_header.MapName}");
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
                                 Send(_lastRecFrameCount, _recordState, pipeServer);
                                 continue;
@@ -87,15 +89,17 @@ namespace CoD4_dm1.PipeServer
                             // Stop Record
                             else
                             {
-                                ToggleRecordState();
                                 //_recordClass.PrintFramesConsole();
-                                _csv.ExportToCsvAsync(_recordClass.GetCamFrameList());
+                                
+                                ToggleRecordState();
+                                _ = Task.Run(() => _csv.ExportToCsvAsync(new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
+                                _ = Task.Run(() => GlTF.ExportToGLB(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
                                 continue;
                             }
                         }
                         else 
                         {
-                            Console.WriteLine($"Unkonw instruction: {incomingInstr}");
+                            Console.WriteLine($"[ Server ] Unkonw instruction: {incomingInstr}");
                         }
 
                     }
@@ -116,15 +120,21 @@ namespace CoD4_dm1.PipeServer
         {
                         
             _recordState = !_recordState;
-            
+
             if (_recordState)
             {
-                Console.WriteLine($"Recording started _recordState: {_recordState}");
+                Console.BackgroundColor = ConsoleColor.Cyan;
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.WriteLine($"[ Server ] Recording started _recordState: {_recordState}");
+                Console.ResetColor();
             }
             else
             {
-                Console.WriteLine($"Recording stopped _recordState: {_recordState}");
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.WriteLine($"[ Server ] Recording stopped _recordState: {_recordState}");
                 _lastRecFrameCount = 0;
+                Console.ResetColor();
             }
         }
 
