@@ -13,7 +13,6 @@ namespace CoD4_dm1.FileFormats
 
         public static Task ExportToGLB(Structs.Entitys.Header header, List<Structs.Entitys.Camera> camList)
         {
-            Console.WriteLine("SOME DUM SHİT GOİNG ON");
             var flipY = false;
 
             var scene = new SceneBuilder();

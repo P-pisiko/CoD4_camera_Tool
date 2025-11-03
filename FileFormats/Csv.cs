@@ -13,12 +13,12 @@ namespace CoD4_dm1.FileFormats
         ///<summary>
         /// Appearntly CultureInfo.InvariantCulture forces float/double use . as a decimal seperator
         /// </summary>
-        public Task ExportToCsvAsync(List<Structs.Entitys.Camera> camList)
+        public Task ExportToCsvAsync(Structs.Entitys.Header header,List<Structs.Entitys.Camera> camList)
         {
             var sw = Stopwatch.StartNew();
 
             var inv = CultureInfo.InvariantCulture;
-            var fileName = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss") + ".csv";
+            var fileName = DateTime.Now.ToString("HH-mm-ss") + ".csv";
 
             var sb = new StringBuilder(camList.Count * 64); // rough prealloc
 
@@ -38,9 +38,9 @@ namespace CoD4_dm1.FileFormats
                 sb.AppendLine();
             }
             sw.Stop();
-            Console.WriteLine($"It took {sw.ElapsedMilliseconds}ms to build the list in mem"); 
-
-            File.WriteAllTextAsync(fileName, sb.ToString());
+            Console.WriteLine($"It took {sw.ElapsedMilliseconds}ms to build the list in mem");
+            var safeMapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
+            File.WriteAllTextAsync($"{safeMapName}_{fileName}", sb.ToString());
             return Task.CompletedTask;
         }
     }

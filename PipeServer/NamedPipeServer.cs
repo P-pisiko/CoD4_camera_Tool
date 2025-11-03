@@ -92,7 +92,7 @@ namespace CoD4_dm1.PipeServer
                                 //_recordClass.PrintFramesConsole();
                                 
                                 ToggleRecordState();
-                                _ = Task.Run(() => _csv.ExportToCsvAsync(new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
+                                _ = Task.Run(() => _csv.ExportToCsvAsync(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
                                 _ = Task.Run(() => GlTF.ExportToGLB(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
                                 continue;
                             }

@@ -11,7 +11,7 @@ namespace CoD4_dm1
         public static extern void loaderMain(string filePath);
         static void Main(string[] args)
         {
-            ConsoleSetting.SetQuickEdit();
+            ConsoleSetting.SetQuickEdit(); //Disables the console selection so program doesnt halt...
 
             const string processName = "iw3mp";
             int[] originalPids;
