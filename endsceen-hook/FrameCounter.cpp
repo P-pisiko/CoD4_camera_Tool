@@ -40,7 +40,7 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
     RECT bg;
     bg.left = left - padding;
     bg.top = top - padding;
-    bg.right = left + 240 + padding; // width you want (adjust)
+    bg.right = left + 240 + padding;
     bg.bottom = top + (lineHeight * numLines) + padding;
 
     //D3DRECT d3drect = { bg.left, bg.top, bg.right, bg.bottom };
@@ -59,7 +59,7 @@ void FrameCounter::onFrame(LPDIRECT3DDEVICE9 device) {
     // Line 1
     r.top = top + lineHeight;
     r.bottom = top + lineHeight * 2;
-    sprintf_s(buf, "Registed Frame: %d", registedFrame);
+    sprintf_s(buf, "Saved Frame: %d", registedFrame);
     font->DrawTextA(NULL, buf, -1, &r, DT_LEFT | DT_VCENTER | DT_SINGLELINE, D3DCOLOR_ARGB(255, 255, 255, 0));
 
     r.top = top + lineHeight * 2;
