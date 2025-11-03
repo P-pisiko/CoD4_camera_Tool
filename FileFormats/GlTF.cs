@@ -14,10 +14,10 @@ namespace CoD4_dm1.FileFormats
         public static Task ExportToGLB(Structs.Entitys.Header header, List<Structs.Entitys.Camera> camList)
         {
             var flipY = false;
-
+            
             var scene = new SceneBuilder();
 
-            var VerticalFOV = (float)(45.0 * Math.PI / 180.0);
+            var VerticalFOV = 24; //(float)(45.0 * Math.PI / 180.0);
             var ZNear = 0.01f;
             var ZFar = 10000f;
 
@@ -69,7 +69,13 @@ namespace CoD4_dm1.FileFormats
             var safeMapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
             var filename = $"{safeMapName}_BROKEN.glb";
 
-            model.SaveGLB(filename);
+            if (!Directory.Exists("./exported_cams"))
+            {
+                Directory.CreateDirectory("./exported_cams");
+            }
+
+            model.SaveGLB($"./exported_cams/{filename}");
+
             Console.WriteLine($"Done Writing to glb file: {filename}. Frames:{camList.Count} FPS:{header.ConstCaptureFps}");
             return Task.CompletedTask;
         }

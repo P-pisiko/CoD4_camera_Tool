@@ -40,7 +40,12 @@ namespace CoD4_dm1.FileFormats
             sw.Stop();
             Console.WriteLine($"It took {sw.ElapsedMilliseconds}ms to build the list in mem");
             var safeMapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
-            File.WriteAllTextAsync($"{safeMapName}_{fileName}", sb.ToString());
+
+            if (!Directory.Exists("./exported_cams"))
+            {
+                Directory.CreateDirectory("./exported_cams");
+            }
+            File.WriteAllTextAsync($"./exported_cams/{safeMapName}_{fileName}", sb.ToString());
             return Task.CompletedTask;
         }
     }
