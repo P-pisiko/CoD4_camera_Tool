@@ -81,7 +81,7 @@ namespace CoD4_dm1.PipeServer
                             {
                                 ToggleRecordState();
                                 _header = _recordClass.InitRecord();
-                                Console.WriteLine($"Header info:\n RecordFps: {_header.ConstCaptureFps}, CurrentMap: {_header.MapName}");
+                                Console.WriteLine($"Header info:\n   RecordFps: {_header.ConstCaptureFps}, CurrentMap: {_header.MapName}");
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
                                 Send(_lastRecFrameCount, _recordState, pipeServer);
                                 continue;

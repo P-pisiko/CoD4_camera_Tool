@@ -1,4 +1,5 @@
-﻿using CoD4_dm1.PipeServer;
+﻿using CoD4_dm1.config;
+using CoD4_dm1.PipeServer;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -10,7 +11,8 @@ namespace CoD4_dm1
         public static extern void loaderMain(string filePath);
         static void Main(string[] args)
         {
-            
+            ConsoleSetting.SetQuickEdit();
+
             const string processName = "iw3mp";
             int[] originalPids;
             string gameRootPath = GetProcessDirectory(processName, out originalPids);
