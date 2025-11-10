@@ -18,9 +18,9 @@ namespace CoD4_dm1.FileFormats
             var flipY = false;
 
             var scene = new SceneBuilder();
-            var VerticalFOV = 24;
-            var ZNear = 0.01f;
-            var ZFar = 10000f;
+            var VerticalFOV = 60 * DEG_TO_RAD;
+            var ZNear = 2f;
+            var ZFar = 1;
             var camBuilder = new CameraBuilder.Perspective(VerticalFOV, ZNear, ZFar);
 
             var first = camList[0];
@@ -30,22 +30,19 @@ namespace CoD4_dm1.FileFormats
                 first.Z * INC_TO_METRE
             );
 
-            // Calculate initial rotation
-            var initialQuat = ConvertCod4ToBlenderQuaternion(first.Yaw, first.Pitch);
-            var initialForward = Vector3.Transform(-Vector3.UnitZ, initialQuat);
-            var camTarget0 = camPos0 + initialForward;
-
-            scene.AddCamera(camBuilder, camPos0, camTarget0);
+            scene.AddCamera(camBuilder, Matrix4x4.Identity);
             var model = scene.ToGltf2();
             var camNode = model.LogicalNodes.FirstOrDefault(n => n.Camera != null);
-
+            
+            camNode.LocalTransform = Matrix4x4.Identity; // Reset maybe ?
+            
             var translationKeys = new List<(float time, Vector3 value)>(camList.Count);
             var rotationKeys = new List<(float time, Quaternion value)>(camList.Count);
 
             for (int i = 0; i < camList.Count; i++)
             {
                 var f = camList[i];
-                float time = i / header.ConstCaptureFps;
+                float time = i / (float)header.ConstCaptureFps;
 
                 // Position: Direct conversion, no axis swapping
                 float x = f.X * INC_TO_METRE;
@@ -57,16 +54,21 @@ namespace CoD4_dm1.FileFormats
 
                 translationKeys.Add((time, pos));
                 rotationKeys.Add((time, quat));
+
+                if (i % Math.Max(1, header.ConstCaptureFps / 2) == 0) // sample occasionally
+                {
+                    Console.WriteLine("Rotation keys sample:" + rotationKeys[i]);
+                }
             }
 
             if (camNode != null)
             {
-                camNode.WithTranslationAnimation("Camera_Translation", translationKeys.ToArray());
-                camNode.WithRotationAnimation("Camera_Rotation", rotationKeys.ToArray());
+                camNode.WithRotationAnimation("Camera_Animation", rotationKeys.ToArray());
+                camNode.WithTranslationAnimation("Camera_Animation", translationKeys.ToArray());
             }
 
-            var safeMapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
-            var filename = $"{safeMapName}_FIXED.glb";
+            var MapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
+            var filename = $"{MapName}_fixed.glb";
 
             if (!Directory.Exists("./exported_cams"))
             {
@@ -81,14 +83,19 @@ namespace CoD4_dm1.FileFormats
 
         private static Quaternion ConvertCod4ToBlenderQuaternion(float yawDeg, float pitchDeg)
         {
+            // Convert pitch exactly like Python
             float signedPitchDeg = (pitchDeg <= 85f) ? -pitchDeg : 360f - pitchDeg;
-            float pitchRad = signedPitchDeg * DEG_TO_RAD + (float)(Math.PI / 2.0); // +90 degrees
+            float pitchRad = signedPitchDeg * DEG_TO_RAD + (float)(Math.PI / 2.0);
 
-            float yawRad = yawDeg * DEG_TO_RAD - (float)(Math.PI / 2.0); // -90 degrees
+            // Convert yaw exactly like Python
+            float yawRad = yawDeg * DEG_TO_RAD - (float)(Math.PI / 2.0);
 
-            float rollRad = 0f;
+            // Create quaternion DIRECTLY in Blender's Y-up coordinate system
+            // Blender uses XYZ euler order: pitch around X, roll around Y, yaw around Z
+            // BUT: In Blender's Y-up system, yaw should be around Y axis (not Z)
+            var quat = EulerXYZToQuaternion(pitchRad, yawRad, 0f);
 
-            return EulerXYZToQuaternion(pitchRad, 0f, yawRad);
+            return quat;
         }
 
         private static Quaternion EulerXYZToQuaternion(float x, float y, float z)
