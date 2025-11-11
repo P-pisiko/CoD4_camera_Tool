@@ -10,10 +10,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import List, Tuple
 
 # ────────────────────────────────
-# SETTINGS (change CSV_PATH & Fps etc.)
+# SETTINGS (change CSV_PATH etc.)
 # ────────────────────────────────
 CSV_PATH      = Path(r"C:\Users\<YOUR-USERNAME>\positions.csv")  # <-- change me pls :/
-RECORD_FPS    = 125
+
 INCH_TO_METRE = 0.0254
 CAMERA_NAME   = "Camera"
 FLIP_Y        = False
@@ -22,7 +22,7 @@ WORKERS = 8
 # ────────────────────────────────
 
 scene = bpy.context.scene
-scene.render.fps = RECORD_FPS
+
 scene.render.fps_base = 1.0
 
 if CAMERA_NAME in bpy.data.objects:
@@ -32,7 +32,10 @@ else:
     cam = bpy.data.objects.new(CAMERA_NAME, cam_data)
     bpy.context.scene.collection.objects.link(cam)
 
+camdata = cam.data
 cam.rotation_mode = 'XYZ'
+camdata.lens_unit = "fov"
+camdata.angle = math.radians(80) # or 80 * (3.14159/180.0)
 
 def cod4_pitch_to_blender(pitch_deg: float) -> float:
     signed = -pitch_deg if pitch_deg <= 85 else 360.0 - pitch_deg
@@ -41,11 +44,39 @@ def cod4_pitch_to_blender(pitch_deg: float) -> float:
 def cod4_yaw_to_blender(yaw_deg: float) -> float:
     return math.radians(yaw_deg)
 
+# --- Read CSV and metadata
 rows = []
-with CSV_PATH.open(newline="") as f:
-    reader = csv.DictReader(f)
+metadata = {}
+with CSV_PATH.open(newline="", encoding="utf-8") as f:
+    lines = f.readlines()
+
+# collect metadata lines beginning with '#'
+first_data_index = 0
+for i, line in enumerate(lines):
+    if line.startswith('#'):
+        kv = line[1:].strip()
+        if '=' in kv:
+            k, v = kv.split('=', 1)
+            metadata[k.strip()] = v.strip()
+    else:
+        first_data_index = i
+        break
+
+# parse CSV rows from the remaining lines
+data_lines = lines[first_data_index:]
+if not data_lines:
+    raise ValueError("No CSV data found after metadata.")
+else:
+    reader = csv.DictReader(data_lines)
     for row in reader:
         rows.append(row)
+
+if 'ConstCaptureFps' in metadata:
+    try:
+        fps_val = float(metadata['ConstCaptureFps'])
+        scene.render.fps = int(fps_val) if fps_val.is_integer() else fps_val
+    except Exception as e:
+        raise ValueError("Failed to parse ConstCaptureFps:", e)
 
 # conversion function
 def convert_row(row) -> Tuple[int, Tuple[float,float,float], Tuple[float,float,float]]:
@@ -75,7 +106,7 @@ with ThreadPoolExecutor(max_workers=WORKERS) as ex:
 converted.sort(key=lambda r: r[0])
 
 if not converted:
-    print("No rows found in CSV.")
+    raise ValueError("No rows found in CSV.")
 else:
     max_frame = max(r[0] for r in converted)
 
