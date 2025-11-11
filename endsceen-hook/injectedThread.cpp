@@ -23,8 +23,8 @@ void WINAPI injectedThread(HMODULE hModule)
     // hook EndScene() and retreive the trampoline
     trampEndScene = (endSceneFunc)hookFn(ogEndSceneAddress, (char*)d3dHelper.endSceneHook, 7, endSceneBytes, "EndScene");
 
-    // Keep thread alive until "DELETE" was hit
-    while (!GetAsyncKeyState(VK_DELETE))
+    // Keep thread alive until "HOME" was hit
+    while (!GetAsyncKeyState(VK_HOME))
     {
         
         Sleep(1000);
