@@ -13,6 +13,10 @@ namespace CoD4_dm1.FileFormats
             //var sw = Stopwatch.StartNew();
             var inv = CultureInfo.InvariantCulture;
             var sb = new StringBuilder(camList.Count * 64); // rough prealloc
+            
+            //Metadata of this capture
+            sb.AppendLine($"#MapName={header.MapName}");
+            sb.AppendLine($"#ConstCaptureFps={header.ConstCaptureFps.ToString(inv)}");
 
             sb.AppendLine("frame,x,y,z,yaw,pitch");
 
