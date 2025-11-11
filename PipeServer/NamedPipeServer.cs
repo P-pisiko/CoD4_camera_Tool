@@ -146,18 +146,12 @@ namespace CoD4_dm1.PipeServer
 
             if (_recordState)
             {
-                Console.BackgroundColor = ConsoleColor.Cyan;
-                Console.ForegroundColor = ConsoleColor.Black;
-                Console.WriteLine($"[ Server ] Recording started _recordState: {_recordState}");
-                Console.ResetColor();
+                ConsoleSetting.WriteInfo($"[ Server ] Recording started _recordState: {_recordState}");
             }
             else
             {
-                Console.BackgroundColor = ConsoleColor.Yellow;
-                Console.ForegroundColor = ConsoleColor.Black;
-                Console.WriteLine($"[ Server ] Recording stopped _recordState: {_recordState}");
+                ConsoleSetting.WriteInfo($"[ Server ] Recording stopped _recordState: {_recordState}");
                 _lastRecFrameCount = 0;
-                Console.ResetColor();
             }
         }
 
