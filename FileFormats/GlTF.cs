@@ -18,9 +18,9 @@ namespace CoD4_dm1.FileFormats
             var flipY = false;
 
             var scene = new SceneBuilder();
-            var VerticalFOV = 60 * DEG_TO_RAD;
-            var ZNear = 2f;
-            var ZFar = 1;
+            const float VerticalFOV = 80f * DEG_TO_RAD;
+            const float ZNear = 0.5f;
+            const float ZFar = 1000f;
             var camBuilder = new CameraBuilder.Perspective(VerticalFOV, ZNear, ZFar);
 
             var first = camList[0];
@@ -34,7 +34,6 @@ namespace CoD4_dm1.FileFormats
             var model = scene.ToGltf2();
             var camNode = model.LogicalNodes.FirstOrDefault(n => n.Camera != null);
             
-            camNode.LocalTransform = Matrix4x4.Identity; // Reset maybe ?
             
             var translationKeys = new List<(float time, Vector3 value)>(camList.Count);
             var rotationKeys = new List<(float time, Quaternion value)>(camList.Count);
@@ -44,7 +43,6 @@ namespace CoD4_dm1.FileFormats
                 var f = camList[i];
                 float time = i / (float)header.ConstCaptureFps;
 
-                // Position: Direct conversion, no axis swapping
                 float x = f.X * INC_TO_METRE;
                 float y = f.Z * INC_TO_METRE;  // Game Z becomes Blender Y
                 float z = (flipY ? f.Y : -f.Y) * INC_TO_METRE;  // Game Y becomes Blender -Z
@@ -55,10 +53,10 @@ namespace CoD4_dm1.FileFormats
                 translationKeys.Add((time, pos));
                 rotationKeys.Add((time, quat));
 
-                if (i % Math.Max(1, header.ConstCaptureFps / 2) == 0) // sample occasionally
+                /*if (i % Math.Max(1, header.ConstCaptureFps / 2) == 0) //debug sample 
                 {
                     Console.WriteLine("Rotation keys sample:" + rotationKeys[i]);
-                }
+                }*/
             }
 
             if (camNode != null)
@@ -83,19 +81,22 @@ namespace CoD4_dm1.FileFormats
 
         private static Quaternion ConvertCod4ToBlenderQuaternion(float yawDeg, float pitchDeg)
         {
-            // Convert pitch exactly like Python
             float signedPitchDeg = (pitchDeg <= 85f) ? -pitchDeg : 360f - pitchDeg;
-            float pitchRad = signedPitchDeg * DEG_TO_RAD + (float)(Math.PI / 2.0);
 
-            // Convert yaw exactly like Python
-            float yawRad = yawDeg * DEG_TO_RAD - (float)(Math.PI / 2.0);
+            float pitchRad = signedPitchDeg * DEG_TO_RAD;
+            float yawRad = yawDeg * DEG_TO_RAD;
 
-            // Create quaternion DIRECTLY in Blender's Y-up coordinate system
-            // Blender uses XYZ euler order: pitch around X, roll around Y, yaw around Z
-            // BUT: In Blender's Y-up system, yaw should be around Y axis (not Z)
-            var quat = EulerXYZToQuaternion(pitchRad, yawRad, 0f);
+            // Blender axes: up = +Y, right = +X
+            var quatPitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, pitchRad);
+            var quatYaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, yawRad);
 
-            return quat;
+            // Combine: pitch first, then yaw (world-yaw)
+            var q = Quaternion.Normalize(Quaternion.Multiply(quatYaw, quatPitch));
+            // +90° yaw offset
+            float yawOffsetRad = -90f * DEG_TO_RAD;
+            var quatOffset = Quaternion.CreateFromAxisAngle(Vector3.UnitY, yawOffsetRad);
+
+            return Quaternion.Normalize(Quaternion.Multiply(quatOffset, q));
         }
 
         private static Quaternion EulerXYZToQuaternion(float x, float y, float z)
