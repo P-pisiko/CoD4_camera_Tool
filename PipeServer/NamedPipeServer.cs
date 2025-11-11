@@ -1,8 +1,7 @@
-﻿using CoD4_dm1.FileFormats;
+﻿using CoD4_dm1.config;
+using CoD4_dm1.FileFormats;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.IO.Pipes;
-using System.Threading.Tasks;
 namespace CoD4_dm1.PipeServer
 {
     public class NamedPipeServer
@@ -15,7 +14,7 @@ namespace CoD4_dm1.PipeServer
         private readonly Record _recordClass;
         private readonly Csv _csv;
 
-        public NamedPipeServer(Record record ,string pipeName = "pipeserver")
+        public NamedPipeServer(Record record, string pipeName = "pipeserver")
         {
             _pipeName = pipeName;
             _recordClass = record;
@@ -34,7 +33,7 @@ namespace CoD4_dm1.PipeServer
             Console.WriteLine("===================================");
             using (var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
             {
-                
+
                 Console.WriteLine("[ Server ] Pipe is running, Waiting for client...");
                 pipeServer.WaitForConnection();
                 Console.WriteLine("[ Server ] Client connected!");
@@ -60,7 +59,7 @@ namespace CoD4_dm1.PipeServer
                         // heartbeat
                         if (incomingInstr == 0)
                         {
-                            if (_recordState) 
+                            if (_recordState)
                             {
                                 _lastRecFrameCount = _recordClass.AddNewFrameToList();
                                 Send(_lastRecFrameCount, _recordState, pipeServer);
@@ -90,14 +89,38 @@ namespace CoD4_dm1.PipeServer
                             else
                             {
                                 //_recordClass.PrintFramesConsole();
-                                
                                 ToggleRecordState();
-                                _ = Task.Run(() => _csv.ExportToCsvAsync(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
-                                _ = Task.Run(() => GlTF.ExportToGLB(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())));
+                                _ = Task.Run(() => _csv.ExportToCsvAsync(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())))
+                                    .ContinueWith(t =>
+                                    {
+                                        if (t.IsFaulted)
+                                        {
+                                            var agg = t.Exception;
+                                            ConsoleSetting.WriteError("CSV export failed: " + agg.Flatten().InnerException);
+                                        }
+                                        else if (t.IsCanceled)
+                                        {
+                                            ConsoleSetting.WriteWarning("CSV export cancelled");
+                                        }
+                                    }, TaskScheduler.Default);
+
+                                _ = Task.Run(() => GlTF.ExportToGLB(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())))
+                                    .ContinueWith(t =>
+                                    {
+                                        if (t.IsFaulted)
+                                        {
+                                            var agg = t.Exception;
+                                            ConsoleSetting.WriteError("GLTF Export failed : " + agg.Flatten().InnerException);
+                                        }
+                                        else if (t.IsCanceled)
+                                        {
+                                            ConsoleSetting.WriteWarning("GLTF exprot cancelled");
+                                        }
+                                    }, TaskScheduler.Default);
                                 continue;
                             }
                         }
-                        else 
+                        else
                         {
                             Console.WriteLine($"[ Server ] Unkonw instruction: {incomingInstr}");
                         }
@@ -118,7 +141,7 @@ namespace CoD4_dm1.PipeServer
 
         private void ToggleRecordState()
         {
-                        
+
             _recordState = !_recordState;
 
             if (_recordState)
@@ -143,10 +166,10 @@ namespace CoD4_dm1.PipeServer
             byte[] buffer = BitConverter.GetBytes(lastFrameNumber);
 
             await pipe.WriteAsync(buffer, 0, buffer.Length);
-            
+
         }
 
-        private void Send(int frameCount,bool recordState, NamedPipeServerStream pipe)
+        private void Send(int frameCount, bool recordState, NamedPipeServerStream pipe)
         {
             Span<byte> buf = stackalloc byte[5];
             BinaryPrimitives.WriteInt32LittleEndian(buf, frameCount);
