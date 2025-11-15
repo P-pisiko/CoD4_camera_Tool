@@ -34,7 +34,7 @@ else:
 
 camdata = cam.data
 cam.rotation_mode = 'XYZ'
-camdata.lens_unit = "fov"
+camdata.lens_unit = "FOV"
 camdata.angle = math.radians(80) # or 80 * (3.14159/180.0)
 
 def cod4_pitch_to_blender(pitch_deg: float) -> float:
