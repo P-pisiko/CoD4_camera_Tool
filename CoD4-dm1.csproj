@@ -9,6 +9,7 @@
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <PlatformTarget>x86</PlatformTarget>
 	  <PublishAot>False</PublishAot>
+	  <ApplicationIcon>icons\black-bird.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,6 +19,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="icons\black-bird.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SharpGLTF.Core" Version="1.0.5" />
