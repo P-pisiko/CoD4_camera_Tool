@@ -6,9 +6,9 @@ This repository designed to be used with [C2M](https://github.com/sheilan102/C2M
 
 ### This Alpha Release Includes:
 
-- Support for CoD4x 21.1 for now
+- Support for 1.7 CoD4x 21.1 for now (newer version of CoD4x should work fine)
 - Simple ingame indicator
-- CSV format for export
+- CSV and Gltf format export
 - Python script for importing csv in to Blender
 - Directx 9 Hook
 
@@ -35,7 +35,7 @@ Start the __CoD4-dm1.exe__ then launch the game.
 
 Numpad 5 to controll *(start/stop)* the capture.
 
-Delete to unhook from the game.
+HOME key to unhook from the game.
 
 
 ### Building:
