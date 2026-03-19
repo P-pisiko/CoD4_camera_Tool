@@ -9,7 +9,7 @@ This repository designed to be used with [C2M](https://github.com/sheilan102/C2M
 - Support for 1.7 CoD4x 21.1 for now (newer version of CoD4x should work fine)
 - Simple ingame indicator
 - CSV and Gltf format export
-- Python script for importing csv in to Blender
+- Python script for importing csv data in to Blender
 - Directx 9 Hook
 
 Video Demo:
@@ -35,7 +35,7 @@ Start the __CoD4-dm1.exe__ then launch the game.
 
 Numpad 5 to controll *(start/stop)* the capture.
 
-HOME key to unhook from the game.
+DEL key to unhook from the game.
 
 
 ### Building:
@@ -50,3 +50,10 @@ Requirements
 git clone https://github.com/P-pisiko/CoD4_camera_Tool
 ```
 Open solution -> Release Mode -> x86 -> Build
+
+
+
+
+### Credits:
+- [ps1337 - D3D9 Endsceen-Hook](https://github.com/ps1337/endscene-hook)
+- [bananamafia - Dll-Injector](https://bananamafia.dev/post/multihack/)
