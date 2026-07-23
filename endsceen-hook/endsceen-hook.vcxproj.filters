@@ -7,6 +7,12 @@
     <ClCompile Include="injectedThread.cpp" />
     <ClCompile Include="FrameCounter.cpp" />
     <ClCompile Include="PipeClientIO.cpp" />
+    <ClCompile Include="Signatures.cpp" />
+    <ClCompile Include="GameAddresses.cpp" />
+    <ClCompile Include="GameFunctions.cpp" />
+    <ClCompile Include="BoneLog.cpp" />
+    <ClCompile Include="BoneCapture.cpp" />
+    <ClCompile Include="BoneRecorder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="d3d.h" />
@@ -15,5 +21,13 @@
     <ClInclude Include="trampolines.h" />
     <ClInclude Include="FrameCounter.h" />
     <ClInclude Include="PipeClientIO.h" />
+    <ClInclude Include="Signatures.h" />
+    <ClInclude Include="GameStructures.h" />
+    <ClInclude Include="GameAddresses.h" />
+    <ClInclude Include="GameFunctions.h" />
+    <ClInclude Include="BoneTypes.h" />
+    <ClInclude Include="BoneLog.h" />
+    <ClInclude Include="BoneCapture.h" />
+    <ClInclude Include="BoneRecorder.h" />
   </ItemGroup>
 </Project>

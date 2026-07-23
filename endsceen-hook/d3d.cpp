@@ -2,6 +2,7 @@
 #include "trampolines.h"
 #include "FrameCounter.h"
 #include "PipeClientIO.h"
+#include "BoneRecorder.h"
 HWND hwnd = nullptr;
 
 
@@ -35,6 +36,10 @@ void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
         g_frameCounter->onFrame(p_pDevice);
         SHORT key = GetAsyncKeyState(VK_NUMPAD5);
         std::int16_t v = (key & 0x0001) ? 1 : 0;
+
+        if (CoD4Hook::g_boneRecorder)
+            CoD4Hook::g_boneRecorder->OnFrame(v == 1);
+
         g_pipeClient->Send(v);
     }
 

@@ -6,6 +6,8 @@
 #include <sstream>
 #include "FrameCounter.h"
 #include "PipeClientIO.h"
+#include "GameAddresses.h"
+#include "BoneRecorder.h"
 endSceneFunc trampEndScene = nullptr;
 
 void WINAPI injectedThread(HMODULE hModule)
@@ -23,6 +25,11 @@ void WINAPI injectedThread(HMODULE hModule)
     Hook::Init();
     Hook::Create(ogEndSceneAddress, (void*)d3dHelper.endSceneHook, (void**)&trampEndScene, "EndScene");
 
+    // Resolve the bone-export signatures once. Non-fatal if the game build doesn't match --
+    // camera capture/overlay must keep working either way (see GameAddresses.h).
+    CoD4Hook::GameAddresses::Init();
+    CoD4Hook::g_boneRecorder = new CoD4Hook::BoneRecorder();
+
     // Keep thread alive until "HOME" was hit
     while (!GetAsyncKeyState(VK_HOME))
     {
@@ -33,6 +40,10 @@ void WINAPI injectedThread(HMODULE hModule)
     delete g_frameCounter;
     g_pipeClient = nullptr;
     g_frameCounter = nullptr;
+
+    CoD4Hook::g_boneRecorder->Shutdown();
+    delete CoD4Hook::g_boneRecorder;
+    CoD4Hook::g_boneRecorder = nullptr;
 
     // uninject and unhook
     Hook::Remove(ogEndSceneAddress, "EndScene");

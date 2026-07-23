@@ -93,6 +93,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -114,6 +115,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -132,6 +134,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -152,6 +155,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>third-party\minhook\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -168,6 +172,14 @@
     <ClInclude Include="injectedThread.h" />
     <ClInclude Include="PipeClientIO.h" />
     <ClInclude Include="trampolines.h" />
+    <ClInclude Include="Signatures.h" />
+    <ClInclude Include="GameStructures.h" />
+    <ClInclude Include="GameAddresses.h" />
+    <ClInclude Include="GameFunctions.h" />
+    <ClInclude Include="BoneTypes.h" />
+    <ClInclude Include="BoneLog.h" />
+    <ClInclude Include="BoneCapture.h" />
+    <ClInclude Include="BoneRecorder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d.cpp" />
@@ -176,6 +188,12 @@
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="injectedThread.cpp" />
     <ClCompile Include="PipeClientIO.cpp" />
+    <ClCompile Include="Signatures.cpp" />
+    <ClCompile Include="GameAddresses.cpp" />
+    <ClCompile Include="GameFunctions.cpp" />
+    <ClCompile Include="BoneLog.cpp" />
+    <ClCompile Include="BoneCapture.cpp" />
+    <ClCompile Include="BoneRecorder.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
