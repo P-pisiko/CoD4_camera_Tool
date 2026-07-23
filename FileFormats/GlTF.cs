@@ -10,7 +10,7 @@ namespace CoD4_dm1.FileFormats
         private const float DEG_TO_RAD = (float)(Math.PI / 180.0);
         private const float RAD_TO_DEG = (float)(180.0 / Math.PI);
 
-        public static Task ExportToGLB(Structs.Entitys.Header header, List<Structs.Entitys.Camera> camList)
+        public static Task ExportToGLB(Structs.Entitys.Header header, List<Structs.Entitys.Camera> camList, List<List<Structs.Entitys.BoneObjectFrame>> boneFrames)
         {
             var flipY = false;
             var scene = new SceneBuilder();
@@ -23,6 +23,28 @@ namespace CoD4_dm1.FileFormats
             #endregion
 
             scene.AddCamera(camBuilder, Matrix4x4.Identity);
+
+            // Bones: one NodeBuilder (mesh-less -> imports as an Empty in Blender) per unique
+            // (object, bone) name, added to the same scene/GLB as the camera -- one file, no
+            // separate import step. Must happen before ToGltf2() below so the nodes exist in
+            // the resulting Schema2 model to key animation onto (viewmodel-bone-export.md
+            // section 4: "Empties, one per named bone/tag, world matrix keyed every frame").
+            var boneNodeNames = new HashSet<string>();
+            foreach (var frame in boneFrames)
+            {
+                foreach (var obj in frame)
+                {
+                    foreach (var bone in obj.Bones)
+                    {
+                        string nodeName = $"{obj.ObjectName}_{bone.Name}";
+                        if (boneNodeNames.Add(nodeName))
+                        {
+                            scene.AddNode(new NodeBuilder(nodeName));
+                        }
+                    }
+                }
+            }
+
             var model = scene.ToGltf2();
             var camNode = model.LogicalNodes.FirstOrDefault(n => n.Camera != null);
             
@@ -55,6 +77,46 @@ namespace CoD4_dm1.FileFormats
                 camNode.WithRotationAnimation("Camera_Animation", rotationKeys.ToArray());
                 camNode.WithTranslationAnimation("Camera_Animation", translationKeys.ToArray());
             }
+
+            // Same "look up the resolved Schema2 node by name, key it after conversion"
+            // pattern the camera above uses. Skips invalid samples (lookup failed that
+            // frame) rather than keyframing a meaningless identity transform onto them.
+            var boneTranslationKeys = new Dictionary<string, List<(float time, Vector3 value)>>();
+            var boneRotationKeys = new Dictionary<string, List<(float time, Quaternion value)>>();
+
+            for (int i = 0; i < boneFrames.Count; i++)
+            {
+                float time = i / (float)header.ConstCaptureFps;
+                foreach (var obj in boneFrames[i])
+                {
+                    foreach (var bone in obj.Bones)
+                    {
+                        if (!bone.Valid)
+                            continue;
+
+                        string nodeName = $"{obj.ObjectName}_{bone.Name}";
+                        if (!boneTranslationKeys.TryGetValue(nodeName, out var translations))
+                        {
+                            translations = new List<(float, Vector3)>();
+                            boneTranslationKeys[nodeName] = translations;
+                            boneRotationKeys[nodeName] = new List<(float, Quaternion)>();
+                        }
+
+                        translations.Add((time, bone.Position));
+                        boneRotationKeys[nodeName].Add((time, bone.Rotation));
+                    }
+                }
+            }
+
+            foreach (var nodeName in boneTranslationKeys.Keys)
+            {
+                var boneNode = model.LogicalNodes.FirstOrDefault(n => n.Name == nodeName);
+                if (boneNode == null)
+                    continue;
+
+                boneNode.WithRotationAnimation("Bone_Animation", boneRotationKeys[nodeName].ToArray());
+                boneNode.WithTranslationAnimation("Bone_Animation", boneTranslationKeys[nodeName].ToArray());
+            }
             #region Shit everything happened here to disk.
             var MapName = string.IsNullOrWhiteSpace(header.MapName) ? "map" : header.MapName;
 
@@ -65,7 +127,7 @@ namespace CoD4_dm1.FileFormats
                 Directory.CreateDirectory("./exported_cams");
             }
             model.SaveGLB($"./exported_cams/{filename}");
-            Console.WriteLine($"Done Writing glb file: {filename}. Frames:{camList.Count} FPS:{header.ConstCaptureFps}");
+            Console.WriteLine($"Done Writing glb file: {filename}. Frames:{camList.Count} FPS:{header.ConstCaptureFps} BoneNodes:{boneTranslationKeys.Count}");
             #endregion
             return Task.CompletedTask;
             
