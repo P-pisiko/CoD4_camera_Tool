@@ -23,7 +23,7 @@ namespace CoD4_dm1
 
         private Structs.Entitys.Camera ReadCamFrame()
         {
-            var CamFrame = new Structs.Entitys.Camera
+            var camFrame = new Structs.Entitys.Camera
             {
                 X = _memory.ReadMemory<float>(_processHandle, _baseaddress + Offsets.Cam_X),
                 Y = _memory.ReadMemory<float>(_processHandle, _baseaddress + Offsets.Cam_Y),
@@ -32,7 +32,7 @@ namespace CoD4_dm1
                 Pitch = _memory.ReadMemory<float>(_processHandle, _baseaddress + Offsets.Cam_Pitch)
             };
 
-            return CamFrame;
+            return camFrame;
         }
         public Structs.Entitys.Header InitRecord()
         {
@@ -47,8 +47,8 @@ namespace CoD4_dm1
         }
         public int AddNewFrameToList()
         {
-            var CamFrame = ReadCamFrame();
-            _camFramesList.Add(CamFrame);
+            var camFrame = ReadCamFrame();
+            _camFramesList.Add(camFrame);
             return _camFramesList.Count;
         }
 

@@ -44,8 +44,6 @@ namespace CoD4_dm1
                 }
             }
             
-
-            Memory mem = new Memory();
             Process targetProcess = process;
             IntPtr baseAddress = targetProcess.MainModule.BaseAddress;
 
@@ -95,9 +93,9 @@ namespace CoD4_dm1
                         Console.WriteLine($"\nFound root directory: {dir}");
                         return dir;
                     }
-                    catch
+                    catch(Exception ex)
                     {
-                        // Access denied or process exited while accessing MainModule
+                        Console.WriteLine($"Unable to find root directory: {ex}");
                     }
                 }
 
