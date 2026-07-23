@@ -7,7 +7,6 @@
 #include "FrameCounter.h"
 #include "PipeClientIO.h"
 endSceneFunc trampEndScene = nullptr;
-unsigned char endSceneBytes[7];
 
 void WINAPI injectedThread(HMODULE hModule)
 {
@@ -18,10 +17,11 @@ void WINAPI injectedThread(HMODULE hModule)
     g_pipeClient = new PipeClientIO();
     // Get the function pointer from the dummy device object
     d3dHelper d3dHelper;
-    char* ogEndSceneAddress = d3dHelper.d3d9DeviceTable[42];
+    void* ogEndSceneAddress = d3dHelper.d3d9DeviceTable[42];
 
-    // hook EndScene() and retreive the trampoline
-    trampEndScene = (endSceneFunc)hookFn(ogEndSceneAddress, (char*)d3dHelper.endSceneHook, 7, endSceneBytes, "EndScene");
+    // hook EndScene() via MinHook and retrieve the trampoline
+    Hook::Init();
+    Hook::Create(ogEndSceneAddress, (void*)d3dHelper.endSceneHook, (void**)&trampEndScene, "EndScene");
 
     // Keep thread alive until "HOME" was hit
     while (!GetAsyncKeyState(VK_HOME))
@@ -35,7 +35,8 @@ void WINAPI injectedThread(HMODULE hModule)
     g_frameCounter = nullptr;
 
     // uninject and unhook
-    restore(ogEndSceneAddress, endSceneBytes, 7, "EndScene");
+    Hook::Remove(ogEndSceneAddress, "EndScene");
+    Hook::Shutdown();
 
     MessageBox(0, "BYE!", ":P", 0);
     FreeLibraryAndExitThread(hModule, 0);
