@@ -7,6 +7,7 @@ namespace CoD4_dm1.PipeServer
     public class NamedPipeServer
     {
         private readonly string _pipeName;
+        private readonly string _gameRootPath;
 
         private bool _recordState = false;
         private int _lastRecFrameCount = 0;
@@ -14,11 +15,33 @@ namespace CoD4_dm1.PipeServer
         private readonly Record _recordClass;
         private readonly Csv _csv;
 
-        public NamedPipeServer(Record record, string pipeName = "pipeserver")
+        public NamedPipeServer(Record record, string gameRootPath, string pipeName = "pipeserver")
         {
             _pipeName = pipeName;
+            _gameRootPath = gameRootPath;
             _recordClass = record;
             _csv = new Csv();
+        }
+
+        private string BoneLogPath => Path.Combine(_gameRootPath, "bone_capture", "latest.cd4bones");
+
+        private List<List<Structs.Entitys.BoneObjectFrame>> ReadBoneFrames()
+        {
+            try
+            {
+                var frames = BoneLogReader.Read(BoneLogPath);
+                if (frames.Count == 0)
+                {
+                    ConsoleSetting.WriteWarning("[ Server ] No bone data found for this recording " +
+                        "(bone signatures unavailable on this game build, or no viewmodel was captured).");
+                }
+                return frames;
+            }
+            catch (Exception ex)
+            {
+                ConsoleSetting.WriteError("[ Server ] Failed to read bone log: " + ex.Message);
+                return new List<List<Structs.Entitys.BoneObjectFrame>>();
+            }
         }
 
         /// <summary>
@@ -90,7 +113,10 @@ namespace CoD4_dm1.PipeServer
                             {
                                 //_recordClass.PrintFramesConsole();
                                 ToggleRecordState();
-                                _ = Task.Run(() => _csv.ExportToCsvAsync(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())))
+                                var camFrames = new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList());
+                                var boneFrames = ReadBoneFrames();
+
+                                _ = Task.Run(() => _csv.ExportToCsvAsync(_header, camFrames))
                                     .ContinueWith(t =>
                                     {
                                         if (t.IsFaulted)
@@ -104,7 +130,21 @@ namespace CoD4_dm1.PipeServer
                                         }
                                     }, TaskScheduler.Default);
 
-                                _ = Task.Run(() => GlTF.ExportToGLB(_header, new List<Structs.Entitys.Camera>(_recordClass.GetCamFrameList())))
+                                _ = Task.Run(() => _csv.ExportBonesToCsvAsync(_header, boneFrames))
+                                    .ContinueWith(t =>
+                                    {
+                                        if (t.IsFaulted)
+                                        {
+                                            var agg = t.Exception;
+                                            ConsoleSetting.WriteError("Bones CSV export failed: " + agg.Flatten().InnerException);
+                                        }
+                                        else if (t.IsCanceled)
+                                        {
+                                            ConsoleSetting.WriteWarning("Bones CSV export cancelled");
+                                        }
+                                    }, TaskScheduler.Default);
+
+                                _ = Task.Run(() => GlTF.ExportToGLB(_header, camFrames, boneFrames))
                                     .ContinueWith(t =>
                                     {
                                         if (t.IsFaulted)

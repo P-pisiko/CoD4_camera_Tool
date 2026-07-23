@@ -58,7 +58,7 @@ namespace CoD4_dm1
             Console.WriteLine($"Got a handle to {targetProcess.ProcessName} {targetProcess.Id}");
             
             Record rec = new Record(baseAddress,processHandle);
-            NamedPipeServer pipeServer = new NamedPipeServer(rec);
+            NamedPipeServer pipeServer = new NamedPipeServer(rec, gameRootPath);
             
             pipeServer.PipeServerStart();
             
