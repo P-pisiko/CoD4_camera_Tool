@@ -4,6 +4,7 @@
 #include "PipeClientIO.h"
 HWND hwnd = nullptr;
 
+std::atomic<int> g_hookActiveCalls{ 0 };
 
 LPDIRECT3DDEVICE9 d3dDevice = NULL;
 
@@ -25,11 +26,11 @@ d3dHelper::d3dHelper() {
 }
 
 void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
-    // save the parameter, since it' used in order to draw stuff
+    ++g_hookActiveCalls;
+
     if (!d3dDevice) {
         d3dDevice = p_pDevice;
     }
-
 
     if (g_frameCounter && g_pipeClient) {
         g_frameCounter->onFrame(p_pDevice);
@@ -38,8 +39,8 @@ void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
         g_pipeClient->Send(v);
     }
 
-    // call original function using the trampoline
     trampEndScene(d3dDevice);
+    --g_hookActiveCalls;
 }
 
 //
