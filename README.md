@@ -35,7 +35,7 @@ Start the __CoD4-dm1.exe__ then launch the game.
 
 Numpad 5 to controll *(start/stop)* the capture.
 
-DEL key to unhook from the game.
+HOME key to unhook from the game.
 
 
 ### Building:
