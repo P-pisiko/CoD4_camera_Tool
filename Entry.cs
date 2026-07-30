@@ -17,10 +17,6 @@ namespace CoD4_dm1
             int[] originalPids;
             string gameRootPath = GetProcessDirectory(processName, out originalPids);
             
-            Process[] ps = Process.GetProcessesByName(processName);
-            foreach (Process p in ps)
-                p.Kill();
-
             loaderMain(gameRootPath);
          
             Process process = null;

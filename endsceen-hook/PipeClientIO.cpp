@@ -1,21 +1,21 @@
 #include "PipeClientIO.h"
 #include "FrameCounter.h"
 #include <string>
-#include <thread>
 PipeClientIO* g_pipeClient = nullptr;
 
-PipeClientIO::PipeClientIO() {
+PipeClientIO::PipeClientIO()
+	: hPipe(INVALID_HANDLE_VALUE), hShutdownEvent(NULL), running(true) {
 	pipeName = R"(\\.\pipe\pipeserver)";
 	overlapped = {};
+	readOverlapped = {};
+	hShutdownEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
 	Connect(pipeName);
 
-	std::thread WorkerThread(&PipeClientIO::ReciveLoopStart, this);
-	WorkerThread.detach();
+	workerThread = std::thread(&PipeClientIO::ReciveLoopStart, this);
 }
 
 PipeClientIO::~PipeClientIO() {
 	Disconnect();
-
 }
 
 void PipeClientIO::Send(SHORT v) {
@@ -35,41 +35,68 @@ void PipeClientIO::Send(SHORT v) {
 		else
 		{
 			MessageBox(0, "[PIPE_IO] WriteFile failed to many writes in the queued up", ":(", 0);
-			Disconnect();
+			PipeClientIO* self = this;
 			g_pipeClient = nullptr;
+			self->Disconnect();
+			delete self;
 		}
 	}
 
 }
 
 void PipeClientIO::ReciveLoopStart() {
-	while (hPipe != INVALID_HANDLE_VALUE) {
+	while (running.load(std::memory_order_acquire) && hPipe != INVALID_HANDLE_VALUE) {
 		uint8_t buffer[5] = {};
 		DWORD bytesRead = 0;
-		
-		BOOL err = ReadFile(
-			hPipe,
-			buffer,
-			sizeof(buffer),
-			&bytesRead,
-			NULL
-		);
 
-		if (err == ERROR_BROKEN_PIPE) {
+		ResetEvent(readOverlapped.hEvent);
+		BOOL ok = ReadFile(hPipe, buffer, sizeof(buffer), NULL, &readOverlapped);
+		if (!ok && GetLastError() != ERROR_IO_PENDING) {
 			break;
 		}
 
-		if (bytesRead >= 5) {
+		HANDLE waitHandles[2] = { readOverlapped.hEvent, hShutdownEvent };
+		DWORD waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, INFINITE);
+
+		if (waitResult == WAIT_OBJECT_0 + 1) {
+			CancelIoEx(hPipe, &readOverlapped);
+			break;
+		}
+		if (waitResult != WAIT_OBJECT_0) {
+			break;
+		}
+
+		if (!GetOverlappedResult(hPipe, &readOverlapped, &bytesRead, FALSE)) {
+			break;
+		}
+
+		if (bytesRead >= 5 && g_frameCounter) {
 			g_frameCounter->registedFrame = *reinterpret_cast<int*>(&buffer[0]);
-			g_frameCounter->recState = buffer[4] != 0; // bool can be more than 1 byte so if its not 0 then take it as 1.
+			g_frameCounter->recState = buffer[4] != 0;
 		}
 	}
 }
 
 void PipeClientIO::Disconnect() {
-	if (hPipe != INVALID_HANDLE_VALUE && hPipe != NULL) {
+	running.store(false, std::memory_order_release);
+	if (hShutdownEvent) {
+		SetEvent(hShutdownEvent);
+	}
+	if (workerThread.joinable()) {
+		workerThread.join();
+	}
+
+	if (hPipe != INVALID_HANDLE_VALUE) {
 		CloseHandle(hPipe);
-		hPipe = NULL;
+		hPipe = INVALID_HANDLE_VALUE;
+	}
+	if (readOverlapped.hEvent) {
+		CloseHandle(readOverlapped.hEvent);
+		readOverlapped.hEvent = NULL;
+	}
+	if (hShutdownEvent) {
+		CloseHandle(hShutdownEvent);
+		hShutdownEvent = NULL;
 	}
 }
 
@@ -87,7 +114,8 @@ void PipeClientIO::Connect(const char* pipeName) {
 	if (hPipe == INVALID_HANDLE_VALUE)
 	{
 		MessageBox(0, std::string("[PipeClient] Failed to get a handle to pipe.").c_str(),">:(", 0);
+		return;
 	}
 
+	readOverlapped.hEvent = CreateEventA(NULL, TRUE, FALSE, NULL);
 }
-
