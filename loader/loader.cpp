@@ -44,33 +44,81 @@ BOOL FileExists(LPCTSTR path)
         !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-BOOL checkAlreadyInjected(DWORD PID, std::string moduleName)
+
+
+BOOL FindProcessIdByName(const std::wstring& exeName, DWORD& outPid)
 {
-    // get a snapshot of all processes
-    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, PID);
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snapshot == INVALID_HANDLE_VALUE)
+    {
+        return FALSE;
+    }
+
+    PROCESSENTRY32W entry;
+    entry.dwSize = sizeof(PROCESSENTRY32W);
+
+    BOOL found = FALSE;
+    if (Process32FirstW(snapshot, &entry))
+    {
+        do
+        {
+            if (_wcsicmp(entry.szExeFile, exeName.c_str()) == 0)
+            {
+                found = TRUE;
+                outPid = entry.th32ProcessID;
+                break;
+            }
+        } while (Process32NextW(snapshot, &entry));
+    }
+
+    CloseHandle(snapshot);
+    return found;
+}
+
+// Checks whether `moduleName` is already loaded as a module inside process
+// `PID`. Used to detect a prior injection so we never re-hook an
+// already-hooked EndScene (that would clobber the trampoline's saved
+BOOL checkAlreadyInjected(DWORD PID, const std::string& moduleName)
+{
+    HANDLE hSnapshot = INVALID_HANDLE_VALUE;
+
+    // module snapshots can transiently fail immediately after a process is
+    // created/attached to; retry briefly instead of giving up (or nuking the
+    // whole host process, which previously happened via exit(99) here).
+    for (int attempt = 0; attempt < 10; ++attempt)
+    {
+        hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, PID);
+        if (hSnapshot != INVALID_HANDLE_VALUE)
+        {
+            break;
+        }
+        Sleep(50);
+    }
 
     if (hSnapshot == INVALID_HANDLE_VALUE)
     {
-        std::cerr << "[ loader ] Invalid handle value" << std::endl;
-        exit(99);
+        std::cerr << "[ loader ] Could not snapshot modules for PID " << PID
+            << " (already-injected check skipped)" << std::endl;
+        return FALSE;
     }
 
+    BOOL isInjected = FALSE;
     MODULEENTRY32 ModEntry;
+    ModEntry.dwSize = sizeof(MODULEENTRY32);
     if (Module32First(hSnapshot, &ModEntry))
     {
         do
         {
-            // check if the dll is already present
-            if (!strcmp((char*)ModEntry.szModule, moduleName.c_str()))
+            if (!_stricmp(ModEntry.szModule, moduleName.c_str()))
             {
-                CloseHandle(hSnapshot);
-                return TRUE;
+                isInjected = TRUE;
+                break;
             }
         } while (Module32Next(hSnapshot, &ModEntry));
     }
 
     CloseHandle(hSnapshot);
-    return FALSE;
+    return isInjected;
 }
 
 extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
@@ -98,81 +146,72 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
         EXE_NAME = L"notepad.exe";
     }
 
-    std::wstring EXE_PATH = std::wstring(RootPath) + L"\\" + EXE_NAME;
-    // Launch Process
-    // additional information
-    STARTUPINFOW si;
-    PROCESS_INFORMATION pi;
+    
+    
 
-    // set the size of the structures
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
+    DWORD PID = 0;
+    BOOL alreadyRunning = FindProcessIdByName(EXE_NAME, PID);
 
-    // start the program up
-    if (!CreateProcessW(EXE_PATH.c_str(), // the path
-        NULL,             // Command line
-        NULL,             // Process handle not inheritable
-        NULL,             // Thread handle not inheritable
-        FALSE,            // Set handle inheritance to FALSE
-        0,                // No creation flags
-        NULL,             // Use parent's environment block
-        EXE_DIR.c_str(),  // Use parent's starting directory
-        &si,              // Pointer to STARTUPINFO structure
-        &pi               // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
-    ))
+    if (alreadyRunning)
     {
-        std::wcerr << "[ loader ] Can't create process" << std::endl;
-        exit(88);
-    }
-
-    Sleep(50);
-
-    // Close process and thread handles
-    // this does not stop the game
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-
-    PROCESSENTRY32W entry;
-    DWORD PID = -1;
-    BOOL found = FALSE;
-
-    // Do Windows things
-    entry.dwSize = sizeof(PROCESSENTRY32W);
-    // Get all processes
-    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-    if (snapshot == INVALID_HANDLE_VALUE)
-    {
-        std::cerr << "[ loader ] Can't get list of running processes" << std::endl;
-        exit(1);
-    }
-
-    // Search for the process using the exe file name
-    if (Process32FirstW(snapshot, &entry))
-    {
-        do
-        {
-            // check if a process with the executable file name is present
-            if (wcscmp(entry.szExeFile, EXE_NAME.c_str()) == 0)
-            {
-                found = TRUE;
-                PID = entry.th32ProcessID;
-                std::cout << "[ loader ] Got process: Pid " << PID << " Entry " << entry.szExeFile << std::endl;
-                break;
-            }
-        } while (Process32NextW(snapshot, &entry));
+        std::cout << "[ loader ] Found already-running process: Pid " << PID << std::endl;
     }
     else
     {
-        std::cerr << "[ loader ] Can't process list of running processes" << std::endl;
-        exit(2);
-    }
+        std::wstring EXE_PATH = EXE_DIR + L"\\" + EXE_NAME;
+        // Launch Process
+        // additional information
+        STARTUPINFOW si;
+        PROCESS_INFORMATION pi;
 
-    if (!found)
-    {
-        std::cerr << "[ loader ] Can't find process" << std::endl;
-        exit(3);
+        // set the size of the structures
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+        ZeroMemory(&pi, sizeof(pi));
+
+        // start the program up
+        if (!CreateProcessW(EXE_PATH.c_str(), // the path
+            NULL,             // Command line
+            NULL,             // Process handle not inheritable
+            NULL,             // Thread handle not inheritable
+            FALSE,            // Set handle inheritance to FALSE
+            0,                // No creation flags
+            NULL,             // Use parent's environment block
+            EXE_DIR.c_str(),  // Use parent's starting directory
+            &si,              // Pointer to STARTUPINFO structure
+            &pi               // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
+        ))
+        {
+            std::wcerr << "[ loader ] Can't create process" << std::endl;
+            exit(88);
+        }
+
+        Sleep(50);
+
+        // Close process and thread handles
+        // this does not stop the game
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        // The process may not be immediately enumerable right after
+        // CreateProcessW returns; poll briefly instead of scanning once.
+        BOOL found = FALSE;
+        for (int attempt = 0; attempt < 40 && !found; ++attempt)
+        {
+            found = FindProcessIdByName(EXE_NAME, PID);
+            if (!found)
+            {
+                Sleep(50);
+            }
+        }
+
+        if (!found)
+        {
+            std::cerr << "[ loader ] Can't find process" << std::endl;
+            exit(3);
+        }
+
+        std::cout << "[ loader ] Got process: Pid " << PID << std::endl;
     }
 
     if (!FileExists((LPCTSTR)dllPath))
@@ -181,11 +220,12 @@ extern "C" __declspec(dllexport) int loaderMain(const wchar_t* RootPath)
         exit(4);
     }
 
-    /*if (checkAlreadyInjected(PID, dllPath))
+    if (checkAlreadyInjected(PID, dllname))
     {
-        std::cerr << "Already injected" << std::endl;
-        exit(5);
-    }*/
+        std::cerr << "[ loader ] " << dllname << " is already injected into PID "
+            << PID << " -- skipping re-injection" << std::endl;
+        return 5;
+    }
 
     // Get a handle to the process
     HANDLE procHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
