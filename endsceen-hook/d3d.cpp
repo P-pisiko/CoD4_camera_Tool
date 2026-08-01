@@ -2,6 +2,7 @@
 #include "trampolines.h"
 #include "FrameCounter.h"
 #include "PipeClientIO.h"
+#include "ViewmodelBoneExport.h"
 HWND hwnd = nullptr;
 
 std::atomic<int> g_hookActiveCalls{ 0 };
@@ -37,6 +38,7 @@ void APIENTRY d3dHelper::endSceneHook(LPDIRECT3DDEVICE9 p_pDevice) {
         SHORT key = GetAsyncKeyState(VK_NUMPAD5);
         std::int16_t v = (key & 0x0001) ? 1 : 0;
         g_pipeClient->Send(v);
+        ViewmodelBoneExport::OnFrame(g_frameCounter->recState, g_frameCounter->registedFrame);
     }
 
     trampEndScene(d3dDevice);

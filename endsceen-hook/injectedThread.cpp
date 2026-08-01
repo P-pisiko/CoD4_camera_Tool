@@ -6,6 +6,7 @@
 #include <sstream>
 #include "FrameCounter.h"
 #include "PipeClientIO.h"
+#include "ViewmodelBoneExport.h"
 endSceneFunc trampEndScene = nullptr;
 
 void WINAPI injectedThread(HMODULE hModule)
@@ -35,6 +36,7 @@ void WINAPI injectedThread(HMODULE hModule)
         Sleep(1);
     }
 
+    ViewmodelBoneExport::Shutdown();
     delete g_pipeClient;
     delete g_frameCounter;
     g_pipeClient = nullptr;

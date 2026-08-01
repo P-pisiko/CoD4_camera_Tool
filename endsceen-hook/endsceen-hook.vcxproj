@@ -168,6 +168,9 @@
     <ClInclude Include="injectedThread.h" />
     <ClInclude Include="PipeClientIO.h" />
     <ClInclude Include="trampolines.h" />
+    <ClInclude Include="GameStructures.h" />
+    <ClInclude Include="Signatures.h" />
+    <ClInclude Include="ViewmodelBoneExport.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3d.cpp" />
@@ -176,6 +179,8 @@
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="injectedThread.cpp" />
     <ClCompile Include="PipeClientIO.cpp" />
+    <ClCompile Include="Signatures.cpp" />
+    <ClCompile Include="ViewmodelBoneExport.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
